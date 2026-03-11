@@ -20,8 +20,8 @@ func Start(ctx context.Context) error {
 	service := service.New()
 	srv := srv.New(config.Port)
 
-	srv.Service = service
 	service.Storage = storage
+	srv.Service = service
 
 	log.Printf("Starting server on the port %s... \n", config.Port)
 	return srv.Run()

@@ -13,7 +13,7 @@ COPY . .
 # Build the Go application
 # CGO_ENABLED=0 disables CGO, creating a statically linked binary
 # -o specifies the output file name
-RUN GOOS=linux GOARCH=amd64 go build -o poliglotim-api cmd/main.go
+RUN go build -o poliglotim-api cmd/main.go
 
 EXPOSE 8080
 

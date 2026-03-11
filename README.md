@@ -5,6 +5,13 @@
 ## 🚀 Quick Start
 
 ### With Docker
+
+## build from directory
+```bash
+docker build --tag ghcr.io/imirjar/poliglotim-api:latest .
+```
+
+## run from GitHub registry
 ```bash
 docker run -d -p 3000:3000 ghcr.io/imirjar/poliglotim-api:latest
 ```

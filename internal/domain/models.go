@@ -10,23 +10,22 @@ type Course struct {
 	ID          string    `json:"id"`
 	Name        string    `json:"name"`
 	Description string    `json:"description"`
-	Updated     time.Time `json:"updated"`
+	Updated     time.Time `json:"updated,omitempty"`
 	LogoPath    *string   `json:"logo_path,omitempty"`
-	IsPublished bool      `json:"is_published"`
-	Chapters    []Chapter `json:"chapters"`
+	IsPublished bool      `json:"is_published,omitempty"`
 }
 
 type Chapter struct {
-	Id          string    `json:"id"`
+	ID          string    `json:"id"`
 	Name        string    `json:"name"`
 	Description string    `json:"description"`
 	Updated     time.Time `json:"updated"`
 	Course      string    `json:"course_id,omitempty"`
-	Lessons     []Lesson  `json:"lessons,omitempty"`
+	Position    int       `json:"position,omitempty"`
 }
 
 type Lesson struct {
-	Id      string    `json:"id" bson:"_id"`
+	ID      string    `json:"id"`
 	Chapter string    `json:"chapter_id,omitempty"`
 	Title   string    `json:"title"`
 	Text    string    `json:"text,omitempty"`
@@ -34,7 +33,7 @@ type Lesson struct {
 }
 
 type File struct {
-	Id      primitive.ObjectID `json:"id"`
+	ID      primitive.ObjectID `json:"id"`
 	Name    string             `json:"name"`
 	Link    string             `json:"link"`
 	Updated time.Time          `json:"updated"`
