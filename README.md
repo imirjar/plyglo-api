@@ -1,6 +1,6 @@
-# Poliglotim API Gateway
+# POLIGLOTIM
 
-> Modern API gateway for the Poliglotim learning platform
+> Foreign language courses API
 
 ## 🚀 Quick Start
 
@@ -59,7 +59,7 @@ This is an open-source project! Contributions welcome.
 
 ## 📄 License
 
-MIT © Poliglotim Team
+MIT © reDBeaver Team
 
 ---
 
