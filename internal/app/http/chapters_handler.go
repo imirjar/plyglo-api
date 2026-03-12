@@ -8,21 +8,29 @@ import (
 	models "github.com/imirjar/poliglotim-api/internal/domain"
 )
 
-// getCourses возвращает список всех курсов
-// @Summary Получить все курсы
-// @Description Возвращает список всех доступных курсов
-// @Tags courses
+// ChaptersHandler handles requests to the chapters collection
+// @Summary Manage chapters collection
+// @Description GET - returns list of chapters (filtered by course_id), POST - creates a new chapter
+// @Tags chapters
 // @Accept json
 // @Produce json
-// @Success 200 {array} models.Course "Список курсов"
-// @Failure 500 {object} ErrorResponse "Внутренняя ошибка сервера"
+// @Param course_id query string false "Course ID to filter chapters"
+// @Param chapter body models.Chapter false "New chapter data (for POST)"
+// @Success 200 {array} models.Chapter "List of chapters"
+// @Success 201 {object} models.Chapter "Created chapter"
+// @Failure 400 {object} ErrorResponse "Invalid request format"
+// @Failure 500 {object} ErrorResponse "Internal server error"
 // @Security BearerAuth
-// @Router /courses [get]
+// @Router /chapters [get]
+// @Router /chapters [post]
 func (srv *HttpServer) ChaptersHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case "GET":
-			chapters, err := srv.Service.ReadChapters(r.Context())
+			queryParams := r.URL.Query()
+			chapterID := queryParams.Get("course_id")
+
+			chapters, err := srv.Service.ReadChapters(r.Context(), chapterID)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
@@ -61,16 +69,23 @@ func (srv *HttpServer) ChaptersHandler() http.HandlerFunc {
 	}
 }
 
-// CourseHandler возвращает список всех курсов
-// @Summary Получить все курсы
-// @Description Возвращает список всех доступных курсов
-// @Tags courses
+// ChapterHandler handles requests to a specific chapter
+// @Summary Manage chapter by ID
+// @Description GET - returns chapter by ID, PUT - updates chapter, DELETE - removes chapter
+// @Tags chapters
 // @Accept json
 // @Produce json
-// @Success 200 {array} models.Course "Список курсов"
-// @Failure 500 {object} ErrorResponse "Внутренняя ошибка сервера"
+// @Param chapter_id path string true "Chapter ID"
+// @Param chapter body models.Chapter false "Updated chapter data (for PUT)"
+// @Success 200 {object} models.Chapter "Chapter information"
+// @Success 201 {object} models.Chapter "Updated chapter"
+// @Success 204 "Chapter successfully deleted"
+// @Failure 400 {object} ErrorResponse "Invalid request format"
+// @Failure 500 {object} ErrorResponse "Internal server error"
 // @Security BearerAuth
-// @Router /courses [get]
+// @Router /chapters/{chapter_id} [get]
+// @Router /chapters/{chapter_id} [put]
+// @Router /chapters/{chapter_id} [delete]
 func (srv *HttpServer) ChapterHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
@@ -78,7 +93,7 @@ func (srv *HttpServer) ChapterHandler() http.HandlerFunc {
 
 		switch r.Method {
 		case "GET":
-			chapters, err := srv.Service.ReadChapterByID(r.Context(), chapterID)
+			chapters, err := srv.Service.ReadChapter(r.Context(), chapterID)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
@@ -98,6 +113,7 @@ func (srv *HttpServer) ChapterHandler() http.HandlerFunc {
 				return
 			}
 			defer r.Body.Close()
+			chapter.ID = chapterID
 
 			createdChapter, err := srv.Service.UpdateChapter(r.Context(), chapter)
 			if err != nil {

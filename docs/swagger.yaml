@@ -3,10 +3,10 @@ definitions:
   http.ErrorResponse:
     properties:
       code:
+        example: 400
         type: integer
       error:
-        type: string
-      message:
+        example: error description
         type: string
     type: object
   models.Chapter:
@@ -17,23 +17,15 @@ definitions:
         type: string
       id:
         type: string
-      lessons:
-        items:
-          $ref: '#/definitions/models.Lesson'
-        type: array
       name:
         type: string
+      position:
+        type: integer
       updated:
         type: string
     type: object
   models.Course:
     properties:
-      allowed_group:
-        type: string
-      chapters:
-        items:
-          $ref: '#/definitions/models.Chapter'
-        type: array
       description:
         type: string
       id:
@@ -60,119 +52,648 @@ definitions:
       updated:
         type: string
     type: object
-host: localhost:6060
+host: localhost:8080
 info:
   contact:
     email: support@poliglotim.com
     name: API Support
-  description: API для образовательной платформы Poliglotim
+  description: API for the Poliglotim educational platform
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT
-  termsOfService: http://swagger.io/terms/
   title: Poliglotim API Gateway
   version: "1.0"
 paths:
-  /course/{course_id}:
+  /chapters:
     get:
       consumes:
       - application/json
-      description: Возвращает полную информацию о курсе включая главы и уроки
+      description: GET - returns list of chapters (filtered by course_id), POST -
+        creates a new chapter
       parameters:
-      - description: ID курса
-        in: path
+      - description: Course ID to filter chapters
+        in: query
         name: course_id
-        required: true
         type: string
+      - description: New chapter data (for POST)
+        in: body
+        name: chapter
+        schema:
+          $ref: '#/definitions/models.Chapter'
       produces:
       - application/json
       responses:
         "200":
-          description: Информация о курсе
+          description: List of chapters
           schema:
-            $ref: '#/definitions/models.Course'
+            items:
+              $ref: '#/definitions/models.Chapter'
+            type: array
+        "201":
+          description: Created chapter
+          schema:
+            $ref: '#/definitions/models.Chapter'
         "400":
-          description: Неверный ID курса
-          schema:
-            $ref: '#/definitions/http.ErrorResponse'
-        "404":
-          description: Курс не найден
+          description: Invalid request format
           schema:
             $ref: '#/definitions/http.ErrorResponse'
         "500":
-          description: Внутренняя ошибка сервера
+          description: Internal server error
           schema:
             $ref: '#/definitions/http.ErrorResponse'
       security:
       - BearerAuth: []
-      summary: Получить курс по ID
+      summary: Manage chapters collection
       tags:
-      - courses
+      - chapters
+    post:
+      consumes:
+      - application/json
+      description: GET - returns list of chapters (filtered by course_id), POST -
+        creates a new chapter
+      parameters:
+      - description: Course ID to filter chapters
+        in: query
+        name: course_id
+        type: string
+      - description: New chapter data (for POST)
+        in: body
+        name: chapter
+        schema:
+          $ref: '#/definitions/models.Chapter'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of chapters
+          schema:
+            items:
+              $ref: '#/definitions/models.Chapter'
+            type: array
+        "201":
+          description: Created chapter
+          schema:
+            $ref: '#/definitions/models.Chapter'
+        "400":
+          description: Invalid request format
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Manage chapters collection
+      tags:
+      - chapters
+  /chapters/{chapter_id}:
+    delete:
+      consumes:
+      - application/json
+      description: GET - returns chapter by ID, PUT - updates chapter, DELETE - removes
+        chapter
+      parameters:
+      - description: Chapter ID
+        in: path
+        name: chapter_id
+        required: true
+        type: string
+      - description: Updated chapter data (for PUT)
+        in: body
+        name: chapter
+        schema:
+          $ref: '#/definitions/models.Chapter'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Chapter information
+          schema:
+            $ref: '#/definitions/models.Chapter'
+        "201":
+          description: Updated chapter
+          schema:
+            $ref: '#/definitions/models.Chapter'
+        "204":
+          description: Chapter successfully deleted
+        "400":
+          description: Invalid request format
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Manage chapter by ID
+      tags:
+      - chapters
+    get:
+      consumes:
+      - application/json
+      description: GET - returns chapter by ID, PUT - updates chapter, DELETE - removes
+        chapter
+      parameters:
+      - description: Chapter ID
+        in: path
+        name: chapter_id
+        required: true
+        type: string
+      - description: Updated chapter data (for PUT)
+        in: body
+        name: chapter
+        schema:
+          $ref: '#/definitions/models.Chapter'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Chapter information
+          schema:
+            $ref: '#/definitions/models.Chapter'
+        "201":
+          description: Updated chapter
+          schema:
+            $ref: '#/definitions/models.Chapter'
+        "204":
+          description: Chapter successfully deleted
+        "400":
+          description: Invalid request format
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Manage chapter by ID
+      tags:
+      - chapters
+    put:
+      consumes:
+      - application/json
+      description: GET - returns chapter by ID, PUT - updates chapter, DELETE - removes
+        chapter
+      parameters:
+      - description: Chapter ID
+        in: path
+        name: chapter_id
+        required: true
+        type: string
+      - description: Updated chapter data (for PUT)
+        in: body
+        name: chapter
+        schema:
+          $ref: '#/definitions/models.Chapter'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Chapter information
+          schema:
+            $ref: '#/definitions/models.Chapter'
+        "201":
+          description: Updated chapter
+          schema:
+            $ref: '#/definitions/models.Chapter'
+        "204":
+          description: Chapter successfully deleted
+        "400":
+          description: Invalid request format
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Manage chapter by ID
+      tags:
+      - chapters
   /courses:
     get:
       consumes:
       - application/json
-      description: Возвращает список всех доступных курсов
+      description: GET - returns list of all courses, POST - creates a new course
+      parameters:
+      - description: New course data (for POST)
+        in: body
+        name: course
+        schema:
+          $ref: '#/definitions/models.Course'
       produces:
       - application/json
       responses:
         "200":
-          description: Список курсов
+          description: List of courses
           schema:
             items:
               $ref: '#/definitions/models.Course'
             type: array
+        "201":
+          description: Created course
+          schema:
+            $ref: '#/definitions/models.Course'
+        "400":
+          description: Invalid request format
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
         "500":
-          description: Внутренняя ошибка сервера
+          description: Internal server error
           schema:
             $ref: '#/definitions/http.ErrorResponse'
       security:
       - BearerAuth: []
-      summary: Получить все курсы
+      summary: Manage courses collection
       tags:
       - courses
-  /lesson/{lesson_id}:
-    get:
+    post:
       consumes:
       - application/json
-      description: Возвращает информацию об уроке по временной ссылке
+      description: GET - returns list of all courses, POST - creates a new course
       parameters:
-      - description: ID урока
-        in: path
-        name: lesson_id
-        required: true
-        type: string
+      - description: New course data (for POST)
+        in: body
+        name: course
+        schema:
+          $ref: '#/definitions/models.Course'
       produces:
       - application/json
       responses:
         "200":
-          description: Информация об уроке
+          description: List of courses
           schema:
-            $ref: '#/definitions/models.Lesson'
+            items:
+              $ref: '#/definitions/models.Course'
+            type: array
+        "201":
+          description: Created course
+          schema:
+            $ref: '#/definitions/models.Course'
         "400":
-          description: Неверный ID урока
-          schema:
-            $ref: '#/definitions/http.ErrorResponse'
-        "403":
-          description: Доступ запрещен
-          schema:
-            $ref: '#/definitions/http.ErrorResponse'
-        "404":
-          description: Урок не найден
+          description: Invalid request format
           schema:
             $ref: '#/definitions/http.ErrorResponse'
         "500":
-          description: Внутренняя ошибка сервера
+          description: Internal server error
           schema:
             $ref: '#/definitions/http.ErrorResponse'
       security:
       - BearerAuth: []
-      summary: Получить урок по ID
+      summary: Manage courses collection
+      tags:
+      - courses
+  /courses/{course_id}:
+    delete:
+      consumes:
+      - application/json
+      description: GET - returns course by ID, PUT - updates course, DELETE - removes
+        course
+      parameters:
+      - description: Course ID
+        in: path
+        name: course_id
+        required: true
+        type: string
+      - description: Updated course data (for PUT)
+        in: body
+        name: course
+        schema:
+          $ref: '#/definitions/models.Course'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Course information
+          schema:
+            $ref: '#/definitions/models.Course'
+        "201":
+          description: Updated course
+          schema:
+            $ref: '#/definitions/models.Course'
+        "204":
+          description: Course successfully deleted
+        "400":
+          description: Invalid request format
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Manage course by ID
+      tags:
+      - courses
+    get:
+      consumes:
+      - application/json
+      description: GET - returns course by ID, PUT - updates course, DELETE - removes
+        course
+      parameters:
+      - description: Course ID
+        in: path
+        name: course_id
+        required: true
+        type: string
+      - description: Updated course data (for PUT)
+        in: body
+        name: course
+        schema:
+          $ref: '#/definitions/models.Course'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Course information
+          schema:
+            $ref: '#/definitions/models.Course'
+        "201":
+          description: Updated course
+          schema:
+            $ref: '#/definitions/models.Course'
+        "204":
+          description: Course successfully deleted
+        "400":
+          description: Invalid request format
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Manage course by ID
+      tags:
+      - courses
+    put:
+      consumes:
+      - application/json
+      description: GET - returns course by ID, PUT - updates course, DELETE - removes
+        course
+      parameters:
+      - description: Course ID
+        in: path
+        name: course_id
+        required: true
+        type: string
+      - description: Updated course data (for PUT)
+        in: body
+        name: course
+        schema:
+          $ref: '#/definitions/models.Course'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Course information
+          schema:
+            $ref: '#/definitions/models.Course'
+        "201":
+          description: Updated course
+          schema:
+            $ref: '#/definitions/models.Course'
+        "204":
+          description: Course successfully deleted
+        "400":
+          description: Invalid request format
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Manage course by ID
+      tags:
+      - courses
+  /lessons:
+    get:
+      consumes:
+      - application/json
+      description: GET - returns list of lessons (filtered by chapter_id), POST -
+        creates a new lesson
+      parameters:
+      - description: Chapter ID to filter lessons
+        in: query
+        name: chapter_id
+        type: string
+      - description: New lesson data (for POST)
+        in: body
+        name: lesson
+        schema:
+          $ref: '#/definitions/models.Lesson'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of lessons
+          schema:
+            items:
+              $ref: '#/definitions/models.Lesson'
+            type: array
+        "201":
+          description: Created lesson
+          schema:
+            $ref: '#/definitions/models.Lesson'
+        "400":
+          description: Invalid request format
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Manage lessons collection
       tags:
       - lessons
-securityDefinitions:
-  BearerAuth:
-    in: header
-    name: Authorization
-    type: apiKey
+    post:
+      consumes:
+      - application/json
+      description: GET - returns list of lessons (filtered by chapter_id), POST -
+        creates a new lesson
+      parameters:
+      - description: Chapter ID to filter lessons
+        in: query
+        name: chapter_id
+        type: string
+      - description: New lesson data (for POST)
+        in: body
+        name: lesson
+        schema:
+          $ref: '#/definitions/models.Lesson'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of lessons
+          schema:
+            items:
+              $ref: '#/definitions/models.Lesson'
+            type: array
+        "201":
+          description: Created lesson
+          schema:
+            $ref: '#/definitions/models.Lesson'
+        "400":
+          description: Invalid request format
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Manage lessons collection
+      tags:
+      - lessons
+  /lessons/{lesson_id}:
+    delete:
+      consumes:
+      - application/json
+      description: GET - returns lesson by ID, PUT - updates lesson, DELETE - removes
+        lesson
+      parameters:
+      - description: Lesson ID
+        in: path
+        name: lesson_id
+        required: true
+        type: string
+      - description: Updated lesson data (for PUT)
+        in: body
+        name: lesson
+        schema:
+          $ref: '#/definitions/models.Lesson'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Lesson information
+          schema:
+            $ref: '#/definitions/models.Lesson'
+        "201":
+          description: Updated lesson
+          schema:
+            $ref: '#/definitions/models.Lesson'
+        "204":
+          description: Lesson successfully deleted
+        "400":
+          description: Invalid request format
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "404":
+          description: Lesson not found
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Manage lesson by ID
+      tags:
+      - lessons
+    get:
+      consumes:
+      - application/json
+      description: GET - returns lesson by ID, PUT - updates lesson, DELETE - removes
+        lesson
+      parameters:
+      - description: Lesson ID
+        in: path
+        name: lesson_id
+        required: true
+        type: string
+      - description: Updated lesson data (for PUT)
+        in: body
+        name: lesson
+        schema:
+          $ref: '#/definitions/models.Lesson'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Lesson information
+          schema:
+            $ref: '#/definitions/models.Lesson'
+        "201":
+          description: Updated lesson
+          schema:
+            $ref: '#/definitions/models.Lesson'
+        "204":
+          description: Lesson successfully deleted
+        "400":
+          description: Invalid request format
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "404":
+          description: Lesson not found
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Manage lesson by ID
+      tags:
+      - lessons
+    put:
+      consumes:
+      - application/json
+      description: GET - returns lesson by ID, PUT - updates lesson, DELETE - removes
+        lesson
+      parameters:
+      - description: Lesson ID
+        in: path
+        name: lesson_id
+        required: true
+        type: string
+      - description: Updated lesson data (for PUT)
+        in: body
+        name: lesson
+        schema:
+          $ref: '#/definitions/models.Lesson'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Lesson information
+          schema:
+            $ref: '#/definitions/models.Lesson'
+        "201":
+          description: Updated lesson
+          schema:
+            $ref: '#/definitions/models.Lesson'
+        "204":
+          description: Lesson successfully deleted
+        "400":
+          description: Invalid request format
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "404":
+          description: Lesson not found
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/http.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Manage lesson by ID
+      tags:
+      - lessons
 swagger: "2.0"

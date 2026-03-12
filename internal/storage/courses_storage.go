@@ -9,7 +9,6 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-// COURSES
 func (s *Storage) SelectCourses(ctx context.Context) ([]models.Course, error) {
 	var courses []models.Course
 
@@ -57,7 +56,11 @@ func (s *Storage) SelectCourses(ctx context.Context) ([]models.Course, error) {
 
 	return courses, nil
 }
-func (s *Storage) SelectCourseByID(ctx context.Context, courseID string) (models.Course, error) {
+func (s *Storage) SelectCourse(ctx context.Context, courseID string) (models.Course, error) {
+	var course models.Course
+	if courseID == "" {
+		return course, nil
+	}
 
 	query := `
 		SELECT 
@@ -75,7 +78,6 @@ func (s *Storage) SelectCourseByID(ctx context.Context, courseID string) (models
 
 	row := s.psql.QueryRow(ctx, query, courseID)
 
-	var course models.Course
 	err := row.Scan(
 		&course.ID,
 		&course.Name,

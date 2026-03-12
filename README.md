@@ -32,14 +32,6 @@ services:
 Poliglotim API Gateway provides secure access to educational content - courses, chapters, and lessons. It handles authentication, authorization, and serves as the main entry point for the Poliglotim learning platform.
 
 
-## 🛣️ API Endpoints
-
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| GET | `/courses` | List all courses | ✓ |
-| GET | `/course/{id}` | Get course details | ✓ |
-| GET | `/lesson/{id}` | Get lesson content | ✓ |
-
 ## ⚙️ Configuration
 
 | Env Variable | Purpose | Default |

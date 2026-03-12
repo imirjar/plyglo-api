@@ -9,38 +9,46 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-// COURSES
-func (s *Storage) SelectChapters(ctx context.Context) ([]models.Chapter, error) {
+func (s *Storage) SelectChapters(ctx context.Context, courseID string) ([]models.Chapter, error) {
+	var rows pgx.Rows
+	var err error
 
+	// Базовый запрос
 	query := `
-		SELECT 
-			c.id, 
-			c.name, 
-			c.description, 
-			c.course_id,
-			c.position,
-			c.updated
-		FROM 
-			chapters c
-		ORDER BY 
-			c.position
-		ASC;
-	`
+        SELECT 
+            c.id, 
+            c.name, 
+            c.description, 
+            c.course_id,
+            c.position,
+            c.updated
+        FROM 
+            chapters c
+    `
 
-	rows, err := s.psql.Query(ctx, query)
+	// Добавляем WHERE если нужно
+	if courseID != "" {
+		query += " WHERE course_id = $1"
+	}
+
+	// Добавляем сортировку
+	query += " ORDER BY c.position ASC"
+
+	// Выполняем запрос
+	if courseID != "" {
+		rows, err = s.psql.Query(ctx, query, courseID)
+	} else {
+		rows, err = s.psql.Query(ctx, query)
+	}
+
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to query chapters: %w", err)
 	}
-
 	defer rows.Close()
-	if err = rows.Err(); err != nil {
-		return nil, err
-	}
 
 	var chapters []models.Chapter
 	for rows.Next() {
 		var chapter models.Chapter
-
 		err := rows.Scan(
 			&chapter.ID,
 			&chapter.Name,
@@ -50,21 +58,27 @@ func (s *Storage) SelectChapters(ctx context.Context) ([]models.Chapter, error) 
 			&chapter.Updated,
 		)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to scan chapter: %w", err)
 		}
-		// log.Print(chapter)
 		chapters = append(chapters, chapter)
+	}
+
+	// Проверяем ошибки после итерации
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating chapters: %w", err)
 	}
 
 	return chapters, nil
 }
-func (s *Storage) SelectChapterByID(ctx context.Context, chapterID string) (models.Chapter, error) {
+func (s *Storage) SelectChapter(ctx context.Context, chapterID string) (models.Chapter, error) {
 
 	query := `
 		SELECT 
-			c.id, 
-			c.name, 
-			c.description, 
+			c.id,
+			c.name,
+			c.description,
+			c.course_id,
+			c.position, 
 			c.updated
 		FROM 
 			chapters c
@@ -77,37 +91,40 @@ func (s *Storage) SelectChapterByID(ctx context.Context, chapterID string) (mode
 	var chapter models.Chapter
 	err := row.Scan(
 		&chapter.ID,
-		&chapter.Course,
 		&chapter.Name,
 		&chapter.Description,
+		&chapter.Course,
+		&chapter.Position,
 		&chapter.Updated,
 	)
 
 	log.Print(chapter)
 	return chapter, err
 }
-func (s *Storage) InsertChapter(ctx context.Context, course models.Chapter) (models.Chapter, error) {
+func (s *Storage) InsertChapter(ctx context.Context, chapter models.Chapter) (models.Chapter, error) {
 	query := `
-        INSERT INTO chapters (name, description, course_id)
-        VALUES ($1, $2, $3)
-        RETURNING id, name, description, updated, logo_path, is_published
+        INSERT INTO chapters (name, description, course_id, position)
+        VALUES ($1, $2, $3, $4)
+        RETURNING id, name, description, course_id, position, updated
     `
 
 	// Выполняем запрос и получаем сгенерированные поля
 	row := s.psql.QueryRow(
 		ctx,
 		query,
-		course.Name,
-		course.Description,
-		course.Course,
+		chapter.Name,
+		chapter.Description,
+		chapter.Course,
+		chapter.Position,
 	)
 
 	var createdChapter models.Chapter
 	err := row.Scan(
 		&createdChapter.ID,
-		&createdChapter.Course,
 		&createdChapter.Name,
 		&createdChapter.Description,
+		&createdChapter.Course,
+		&createdChapter.Position,
 		&createdChapter.Updated,
 	)
 	if err != nil {
@@ -117,15 +134,17 @@ func (s *Storage) InsertChapter(ctx context.Context, course models.Chapter) (mod
 	return createdChapter, nil
 }
 func (s *Storage) UpdateChapter(ctx context.Context, chapter models.Chapter) (models.Chapter, error) {
+	// log.Print(chapter)
+	log.Print("OOOOK")
 	query := `
-        UPDATE courses 
+        UPDATE chapters 
         SET name = $1, 
             description = $2, 
-            logo_path = $3, 
-            is_published = $4,
-            updated = CURRENT_TIMESTAMP
-        WHERE id = $5
-        RETURNING id, name, description, updated, logo_path, is_published
+            position = $3,
+			course_id = $4,
+			updated = $5
+        WHERE id = $6
+        RETURNING id, name, description, position, course_id, updated
     `
 
 	var updatedChapter models.Chapter
@@ -134,13 +153,16 @@ func (s *Storage) UpdateChapter(ctx context.Context, chapter models.Chapter) (mo
 		query,
 		chapter.Name,
 		chapter.Description,
+		chapter.Position,
 		chapter.Course,
+		chapter.Updated,
 		chapter.ID,
 	).Scan(
 		&updatedChapter.ID,
 		&updatedChapter.Name,
-		&updatedChapter.Course,
 		&updatedChapter.Description,
+		&updatedChapter.Position,
+		&updatedChapter.Course,
 		&updatedChapter.Updated,
 	)
 

@@ -13,11 +13,11 @@ func (s *Service) CreateCourse(ctx context.Context, course models.Course) (model
 	return s.Storage.InsertCourse(ctx, course)
 }
 
-func (s *Service) ReadCourseByID(ctx context.Context, courseID string) (models.Course, error) {
-	return s.Storage.SelectCourseByID(ctx, courseID)
+func (s *Service) ReadCourse(ctx context.Context, courseID string) (models.Course, error) {
+	return s.Storage.SelectCourse(ctx, courseID)
 }
 func (s *Service) UpdateCourse(ctx context.Context, course models.Course) (models.Course, error) {
-	return s.Storage.InsertCourse(ctx, course)
+	return s.Storage.UpdateCourse(ctx, course)
 }
 func (s *Service) DeleteCourse(ctx context.Context, courseID string) error {
 	return s.Storage.DeleteCourse(ctx, courseID)

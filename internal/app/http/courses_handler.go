@@ -8,16 +8,20 @@ import (
 	models "github.com/imirjar/poliglotim-api/internal/domain"
 )
 
-// getCourses возвращает список всех курсов
-// @Summary Получить все курсы
-// @Description Возвращает список всех доступных курсов
+// CoursesHandler handles requests to the courses collection
+// @Summary Manage courses collection
+// @Description GET - returns list of all courses, POST - creates a new course
 // @Tags courses
 // @Accept json
 // @Produce json
-// @Success 200 {array} models.Course "Список курсов"
-// @Failure 500 {object} ErrorResponse "Внутренняя ошибка сервера"
+// @Param course body models.Course false "New course data (for POST)"
+// @Success 200 {array} models.Course "List of courses"
+// @Success 201 {object} models.Course "Created course"
+// @Failure 400 {object} ErrorResponse "Invalid request format"
+// @Failure 500 {object} ErrorResponse "Internal server error"
 // @Security BearerAuth
 // @Router /courses [get]
+// @Router /courses [post]
 func (srv *HttpServer) CoursesHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
@@ -61,16 +65,23 @@ func (srv *HttpServer) CoursesHandler() http.HandlerFunc {
 	}
 }
 
-// CourseHandler возвращает список всех курсов
-// @Summary Получить все курсы
-// @Description Возвращает список всех доступных курсов
+// CourseHandler handles requests to a specific course
+// @Summary Manage course by ID
+// @Description GET - returns course by ID, PUT - updates course, DELETE - removes course
 // @Tags courses
 // @Accept json
 // @Produce json
-// @Success 200 {array} models.Course "Список курсов"
-// @Failure 500 {object} ErrorResponse "Внутренняя ошибка сервера"
+// @Param course_id path string true "Course ID"
+// @Param course body models.Course false "Updated course data (for PUT)"
+// @Success 200 {object} models.Course "Course information"
+// @Success 201 {object} models.Course "Updated course"
+// @Success 204 "Course successfully deleted"
+// @Failure 400 {object} ErrorResponse "Invalid request format"
+// @Failure 500 {object} ErrorResponse "Internal server error"
 // @Security BearerAuth
-// @Router /courses [get]
+// @Router /courses/{course_id} [get]
+// @Router /courses/{course_id} [put]
+// @Router /courses/{course_id} [delete]
 func (srv *HttpServer) CourseHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
@@ -78,7 +89,7 @@ func (srv *HttpServer) CourseHandler() http.HandlerFunc {
 
 		switch r.Method {
 		case "GET":
-			courses, err := srv.Service.ReadCourseByID(r.Context(), courseID)
+			courses, err := srv.Service.ReadCourse(r.Context(), courseID)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
@@ -98,6 +109,7 @@ func (srv *HttpServer) CourseHandler() http.HandlerFunc {
 				return
 			}
 			defer r.Body.Close()
+			course.ID = courseID
 
 			createdCourse, err := srv.Service.UpdateCourse(r.Context(), course)
 			if err != nil {

@@ -9,7 +9,6 @@ const docTemplate = `{
     "info": {
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
-        "termsOfService": "http://swagger.io/terms/",
         "contact": {
             "name": "API Support",
             "email": "support@poliglotim.com"
@@ -23,14 +22,14 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/course/{course_id}": {
+        "/chapters": {
             "get": {
                 "security": [
                     {
                         "BearerAuth": []
                     }
                 ],
-                "description": "Возвращает полную информацию о курсе включая главы и уроки",
+                "description": "GET - returns list of chapters (filtered by course_id), POST - creates a new chapter",
                 "consumes": [
                     "application/json"
                 ],
@@ -38,39 +37,306 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "courses"
+                    "chapters"
                 ],
-                "summary": "Получить курс по ID",
+                "summary": "Manage chapters collection",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ID курса",
+                        "description": "Course ID to filter chapters",
                         "name": "course_id",
-                        "in": "path",
-                        "required": true
+                        "in": "query"
+                    },
+                    {
+                        "description": "New chapter data (for POST)",
+                        "name": "chapter",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/models.Chapter"
+                        }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Информация о курсе",
+                        "description": "List of chapters",
                         "schema": {
-                            "$ref": "#/definitions/models.Course"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Chapter"
+                            }
+                        }
+                    },
+                    "201": {
+                        "description": "Created chapter",
+                        "schema": {
+                            "$ref": "#/definitions/models.Chapter"
                         }
                     },
                     "400": {
-                        "description": "Неверный ID курса",
-                        "schema": {
-                            "$ref": "#/definitions/http.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Курс не найден",
+                        "description": "Invalid request format",
                         "schema": {
                             "$ref": "#/definitions/http.ErrorResponse"
                         }
                     },
                     "500": {
-                        "description": "Внутренняя ошибка сервера",
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "GET - returns list of chapters (filtered by course_id), POST - creates a new chapter",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "chapters"
+                ],
+                "summary": "Manage chapters collection",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Course ID to filter chapters",
+                        "name": "course_id",
+                        "in": "query"
+                    },
+                    {
+                        "description": "New chapter data (for POST)",
+                        "name": "chapter",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/models.Chapter"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of chapters",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Chapter"
+                            }
+                        }
+                    },
+                    "201": {
+                        "description": "Created chapter",
+                        "schema": {
+                            "$ref": "#/definitions/models.Chapter"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request format",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/chapters/{chapter_id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "GET - returns chapter by ID, PUT - updates chapter, DELETE - removes chapter",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "chapters"
+                ],
+                "summary": "Manage chapter by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Chapter ID",
+                        "name": "chapter_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Updated chapter data (for PUT)",
+                        "name": "chapter",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/models.Chapter"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Chapter information",
+                        "schema": {
+                            "$ref": "#/definitions/models.Chapter"
+                        }
+                    },
+                    "201": {
+                        "description": "Updated chapter",
+                        "schema": {
+                            "$ref": "#/definitions/models.Chapter"
+                        }
+                    },
+                    "204": {
+                        "description": "Chapter successfully deleted"
+                    },
+                    "400": {
+                        "description": "Invalid request format",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "GET - returns chapter by ID, PUT - updates chapter, DELETE - removes chapter",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "chapters"
+                ],
+                "summary": "Manage chapter by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Chapter ID",
+                        "name": "chapter_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Updated chapter data (for PUT)",
+                        "name": "chapter",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/models.Chapter"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Chapter information",
+                        "schema": {
+                            "$ref": "#/definitions/models.Chapter"
+                        }
+                    },
+                    "201": {
+                        "description": "Updated chapter",
+                        "schema": {
+                            "$ref": "#/definitions/models.Chapter"
+                        }
+                    },
+                    "204": {
+                        "description": "Chapter successfully deleted"
+                    },
+                    "400": {
+                        "description": "Invalid request format",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "GET - returns chapter by ID, PUT - updates chapter, DELETE - removes chapter",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "chapters"
+                ],
+                "summary": "Manage chapter by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Chapter ID",
+                        "name": "chapter_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Updated chapter data (for PUT)",
+                        "name": "chapter",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/models.Chapter"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Chapter information",
+                        "schema": {
+                            "$ref": "#/definitions/models.Chapter"
+                        }
+                    },
+                    "201": {
+                        "description": "Updated chapter",
+                        "schema": {
+                            "$ref": "#/definitions/models.Chapter"
+                        }
+                    },
+                    "204": {
+                        "description": "Chapter successfully deleted"
+                    },
+                    "400": {
+                        "description": "Invalid request format",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
                         "schema": {
                             "$ref": "#/definitions/http.ErrorResponse"
                         }
@@ -85,7 +351,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Возвращает список всех доступных курсов",
+                "description": "GET - returns list of all courses, POST - creates a new course",
                 "consumes": [
                     "application/json"
                 ],
@@ -95,10 +361,20 @@ const docTemplate = `{
                 "tags": [
                     "courses"
                 ],
-                "summary": "Получить все курсы",
+                "summary": "Manage courses collection",
+                "parameters": [
+                    {
+                        "description": "New course data (for POST)",
+                        "name": "course",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/models.Course"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "Список курсов",
+                        "description": "List of courses",
                         "schema": {
                             "type": "array",
                             "items": {
@@ -106,8 +382,77 @@ const docTemplate = `{
                             }
                         }
                     },
+                    "201": {
+                        "description": "Created course",
+                        "schema": {
+                            "$ref": "#/definitions/models.Course"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request format",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
                     "500": {
-                        "description": "Внутренняя ошибка сервера",
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "GET - returns list of all courses, POST - creates a new course",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "courses"
+                ],
+                "summary": "Manage courses collection",
+                "parameters": [
+                    {
+                        "description": "New course data (for POST)",
+                        "name": "course",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/models.Course"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of courses",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Course"
+                            }
+                        }
+                    },
+                    "201": {
+                        "description": "Created course",
+                        "schema": {
+                            "$ref": "#/definitions/models.Course"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request format",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
                         "schema": {
                             "$ref": "#/definitions/http.ErrorResponse"
                         }
@@ -115,14 +460,208 @@ const docTemplate = `{
                 }
             }
         },
-        "/lesson/{lesson_id}": {
+        "/courses/{course_id}": {
             "get": {
                 "security": [
                     {
                         "BearerAuth": []
                     }
                 ],
-                "description": "Возвращает информацию об уроке по временной ссылке",
+                "description": "GET - returns course by ID, PUT - updates course, DELETE - removes course",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "courses"
+                ],
+                "summary": "Manage course by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Course ID",
+                        "name": "course_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Updated course data (for PUT)",
+                        "name": "course",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/models.Course"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Course information",
+                        "schema": {
+                            "$ref": "#/definitions/models.Course"
+                        }
+                    },
+                    "201": {
+                        "description": "Updated course",
+                        "schema": {
+                            "$ref": "#/definitions/models.Course"
+                        }
+                    },
+                    "204": {
+                        "description": "Course successfully deleted"
+                    },
+                    "400": {
+                        "description": "Invalid request format",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "GET - returns course by ID, PUT - updates course, DELETE - removes course",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "courses"
+                ],
+                "summary": "Manage course by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Course ID",
+                        "name": "course_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Updated course data (for PUT)",
+                        "name": "course",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/models.Course"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Course information",
+                        "schema": {
+                            "$ref": "#/definitions/models.Course"
+                        }
+                    },
+                    "201": {
+                        "description": "Updated course",
+                        "schema": {
+                            "$ref": "#/definitions/models.Course"
+                        }
+                    },
+                    "204": {
+                        "description": "Course successfully deleted"
+                    },
+                    "400": {
+                        "description": "Invalid request format",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "GET - returns course by ID, PUT - updates course, DELETE - removes course",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "courses"
+                ],
+                "summary": "Manage course by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Course ID",
+                        "name": "course_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Updated course data (for PUT)",
+                        "name": "course",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/models.Course"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Course information",
+                        "schema": {
+                            "$ref": "#/definitions/models.Course"
+                        }
+                    },
+                    "201": {
+                        "description": "Updated course",
+                        "schema": {
+                            "$ref": "#/definitions/models.Course"
+                        }
+                    },
+                    "204": {
+                        "description": "Course successfully deleted"
+                    },
+                    "400": {
+                        "description": "Invalid request format",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/lessons": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "GET - returns list of lessons (filtered by chapter_id), POST - creates a new lesson",
                 "consumes": [
                     "application/json"
                 ],
@@ -132,43 +671,322 @@ const docTemplate = `{
                 "tags": [
                     "lessons"
                 ],
-                "summary": "Получить урок по ID",
+                "summary": "Manage lessons collection",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ID урока",
-                        "name": "lesson_id",
-                        "in": "path",
-                        "required": true
+                        "description": "Chapter ID to filter lessons",
+                        "name": "chapter_id",
+                        "in": "query"
+                    },
+                    {
+                        "description": "New lesson data (for POST)",
+                        "name": "lesson",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/models.Lesson"
+                        }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Информация об уроке",
+                        "description": "List of lessons",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Lesson"
+                            }
+                        }
+                    },
+                    "201": {
+                        "description": "Created lesson",
                         "schema": {
                             "$ref": "#/definitions/models.Lesson"
                         }
                     },
                     "400": {
-                        "description": "Неверный ID урока",
-                        "schema": {
-                            "$ref": "#/definitions/http.ErrorResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "Доступ запрещен",
-                        "schema": {
-                            "$ref": "#/definitions/http.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Урок не найден",
+                        "description": "Invalid request format",
                         "schema": {
                             "$ref": "#/definitions/http.ErrorResponse"
                         }
                     },
                     "500": {
-                        "description": "Внутренняя ошибка сервера",
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "GET - returns list of lessons (filtered by chapter_id), POST - creates a new lesson",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "lessons"
+                ],
+                "summary": "Manage lessons collection",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Chapter ID to filter lessons",
+                        "name": "chapter_id",
+                        "in": "query"
+                    },
+                    {
+                        "description": "New lesson data (for POST)",
+                        "name": "lesson",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/models.Lesson"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of lessons",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Lesson"
+                            }
+                        }
+                    },
+                    "201": {
+                        "description": "Created lesson",
+                        "schema": {
+                            "$ref": "#/definitions/models.Lesson"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request format",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/lessons/{lesson_id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "GET - returns lesson by ID, PUT - updates lesson, DELETE - removes lesson",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "lessons"
+                ],
+                "summary": "Manage lesson by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Lesson ID",
+                        "name": "lesson_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Updated lesson data (for PUT)",
+                        "name": "lesson",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/models.Lesson"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lesson information",
+                        "schema": {
+                            "$ref": "#/definitions/models.Lesson"
+                        }
+                    },
+                    "201": {
+                        "description": "Updated lesson",
+                        "schema": {
+                            "$ref": "#/definitions/models.Lesson"
+                        }
+                    },
+                    "204": {
+                        "description": "Lesson successfully deleted"
+                    },
+                    "400": {
+                        "description": "Invalid request format",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Lesson not found",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "GET - returns lesson by ID, PUT - updates lesson, DELETE - removes lesson",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "lessons"
+                ],
+                "summary": "Manage lesson by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Lesson ID",
+                        "name": "lesson_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Updated lesson data (for PUT)",
+                        "name": "lesson",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/models.Lesson"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lesson information",
+                        "schema": {
+                            "$ref": "#/definitions/models.Lesson"
+                        }
+                    },
+                    "201": {
+                        "description": "Updated lesson",
+                        "schema": {
+                            "$ref": "#/definitions/models.Lesson"
+                        }
+                    },
+                    "204": {
+                        "description": "Lesson successfully deleted"
+                    },
+                    "400": {
+                        "description": "Invalid request format",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Lesson not found",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "GET - returns lesson by ID, PUT - updates lesson, DELETE - removes lesson",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "lessons"
+                ],
+                "summary": "Manage lesson by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Lesson ID",
+                        "name": "lesson_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Updated lesson data (for PUT)",
+                        "name": "lesson",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/models.Lesson"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lesson information",
+                        "schema": {
+                            "$ref": "#/definitions/models.Lesson"
+                        }
+                    },
+                    "201": {
+                        "description": "Updated lesson",
+                        "schema": {
+                            "$ref": "#/definitions/models.Lesson"
+                        }
+                    },
+                    "204": {
+                        "description": "Lesson successfully deleted"
+                    },
+                    "400": {
+                        "description": "Invalid request format",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Lesson not found",
+                        "schema": {
+                            "$ref": "#/definitions/http.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
                         "schema": {
                             "$ref": "#/definitions/http.ErrorResponse"
                         }
@@ -182,13 +1000,12 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "code": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 400
                 },
                 "error": {
-                    "type": "string"
-                },
-                "message": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "error description"
                 }
             }
         },
@@ -204,14 +1021,11 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
-                "lessons": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.Lesson"
-                    }
-                },
                 "name": {
                     "type": "string"
+                },
+                "position": {
+                    "type": "integer"
                 },
                 "updated": {
                     "type": "string"
@@ -221,15 +1035,6 @@ const docTemplate = `{
         "models.Course": {
             "type": "object",
             "properties": {
-                "allowed_group": {
-                    "type": "string"
-                },
-                "chapters": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.Chapter"
-                    }
-                },
                 "description": {
                     "type": "string"
                 },
@@ -270,24 +1075,17 @@ const docTemplate = `{
                 }
             }
         }
-    },
-    "securityDefinitions": {
-        "BearerAuth": {
-            "type": "apiKey",
-            "name": "Authorization",
-            "in": "header"
-        }
     }
 }`
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "localhost:6060",
+	Host:             "localhost:8080",
 	BasePath:         "/",
 	Schemes:          []string{},
 	Title:            "Poliglotim API Gateway",
-	Description:      "API для образовательной платформы Poliglotim",
+	Description:      "API for the Poliglotim educational platform",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

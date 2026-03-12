@@ -16,15 +16,20 @@ type Service struct {
 
 type Storage interface {
 	SelectCourses(context.Context) ([]models.Course, error)
-	SelectCourseByID(context.Context, string) (models.Course, error)
+	SelectCourse(context.Context, string) (models.Course, error)
 	InsertCourse(context.Context, models.Course) (models.Course, error)
+	UpdateCourse(context.Context, models.Course) (models.Course, error)
 	DeleteCourse(context.Context, string) error
 
-	SelectChapters(context.Context) ([]models.Chapter, error)
-	SelectChapterByID(context.Context, string) (models.Chapter, error)
+	SelectChapters(context.Context, string) ([]models.Chapter, error)
+	SelectChapter(context.Context, string) (models.Chapter, error)
 	InsertChapter(context.Context, models.Chapter) (models.Chapter, error)
+	UpdateChapter(context.Context, models.Chapter) (models.Chapter, error)
 	DeleteChapter(context.Context, string) error
 
 	SelectLessons(context.Context, string) ([]models.Lesson, error)
 	SelectLesson(context.Context, string) (models.Lesson, error)
+	InsertLesson(context.Context, models.Lesson) (models.Lesson, error)
+	UpdateLesson(context.Context, models.Lesson) (models.Lesson, error)
+	DeleteLesson(context.Context, string) error
 }
