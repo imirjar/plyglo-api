@@ -2,8 +2,6 @@ package models
 
 import (
 	"time"
-
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type Course struct {
@@ -30,11 +28,4 @@ type Lesson struct {
 	Title   string    `json:"title"`
 	Text    string    `json:"text,omitempty"`
 	Updated time.Time `json:"updated"`
-}
-
-type File struct {
-	ID      primitive.ObjectID `json:"id"`
-	Name    string             `json:"name"`
-	Link    string             `json:"link"`
-	Updated time.Time          `json:"updated"`
 }

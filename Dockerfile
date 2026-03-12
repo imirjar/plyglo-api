@@ -1,21 +1,11 @@
-# Stage 1: Builder
-FROM golang:1.23-alpine AS builder
-
+# Stage 1: Сборка (использует golang образ)
+FROM golang:1.26.1-alpine AS builder
 WORKDIR /app
-
-# Copy go.mod and go.sum first to leverage Docker cache
-COPY go.mod go.sum ./
-RUN go mod download
-
-# Copy the rest of the application source code
 COPY . .
+RUN go build -o app cmd/main.go
 
-# Build the Go application
-# CGO_ENABLED=0 disables CGO, creating a statically linked binary
-# -o specifies the output file name
-RUN go build -o poliglotim-api cmd/main.go
-
-EXPOSE 8080
-
-# Command to run the application
-CMD ["./poliglotim-api"]
+# Stage 2: Запуск (использует легковесный alpine)
+FROM alpine:latest
+WORKDIR /app
+COPY --from=builder /app/app .
+CMD ["./app"]
