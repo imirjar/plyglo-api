@@ -10,8 +10,8 @@ const docTemplate = `{
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
         "contact": {
-            "name": "API Support",
-            "email": "support@poliglotim.com"
+            "name": "Artem Zadorov",
+            "email": "azadorov1234@gmail.com"
         },
         "license": {
             "name": "MIT",
@@ -1084,8 +1084,8 @@ var SwaggerInfo = &swag.Spec{
 	Host:             "localhost:8080",
 	BasePath:         "/",
 	Schemes:          []string{},
-	Title:            "Poliglotim API Gateway",
-	Description:      "API for the Poliglotim educational platform",
+	Title:            "Language course API",
+	Description:      "API for the educational platform",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

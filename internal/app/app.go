@@ -14,7 +14,7 @@ func Start(ctx context.Context) error {
 	config := config.New()
 
 	storage := storage.New(ctx)
-	storage.Сonnect(ctx, config.DBConn)
+	storage.Connect(ctx, config.DBConn)
 	defer storage.Disconnect(ctx)
 
 	service := service.New()

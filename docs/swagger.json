@@ -1,11 +1,11 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "API for the Poliglotim educational platform",
-        "title": "Poliglotim API Gateway",
+        "description": "API for the educational platform",
+        "title": "Language course API",
         "contact": {
-            "name": "API Support",
-            "email": "support@poliglotim.com"
+            "name": "Artem Zadorov",
+            "email": "azadorov1234@gmail.com"
         },
         "license": {
             "name": "MIT",

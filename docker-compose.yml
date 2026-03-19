@@ -1,0 +1,38 @@
+
+services:
+  api:
+    build: .
+    container_name: poliglotim-api
+    # restart: unless-stopped
+    environment:
+      - PORT=8080
+      - DB_CONN=postgresql://imirjar:M390v-21@poliglotim-postgres:5432/courses
+    ports:
+      - "8080:8080"
+    networks:
+      - app-network
+    depends_on:
+      - postgres
+  
+  postgres:
+    image: postgres:15
+    container_name: poliglotim-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: imirjar
+      POSTGRES_PASSWORD: M390v-21
+      POSTGRES_DB: courses
+    ports:
+      - "5432:5432"
+    networks:
+        - app-network
+    volumes:
+      - postgres_data:/var/lib/postgresql/data 
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes: 
+  postgres_data:
+  

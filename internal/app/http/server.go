@@ -10,30 +10,18 @@ import (
 	httpSwagger "github.com/swaggo/http-swagger"
 )
 
-// @host localhost:6060
-// @BasePath /
-// @securityDefinitions.apikey BearerAuth
-// @in header
-// @name Authorization
-
-// HttpServer represents the HTTP server for the application
-// @title Poliglotim API Gateway
+// @title Language course API
 // @version 1.0
-// @description API for the Poliglotim educational platform
-// @termsOfService http://swagger.io/terms/
+// @description API for the educational platform
 
-// @contact.name API Support
-// @contact.url http://www.poliglotim.com/support
-// @contact.email support@poliglotim.com
+// @contact.name Artem Zadorov
+// @contact.email azadorov1234@gmail.com
 
 // @license.name MIT
 // @license.url https://opensource.org/licenses/MIT
 
-// @host localhost:6060
+// @host localhost:8080
 // @BasePath /
-// @securityDefinitions.apikey BearerAuth
-// @in header
-// @name Authorization
 type HttpServer struct {
 	Port    string
 	Service Service
@@ -51,7 +39,7 @@ func (srv *HttpServer) Run() error {
 	router := mux.NewRouter()
 
 	// Swagger documentation endpoint
-	router.PathPrefix("/swagger/").Handler(httpSwagger.WrapHandler)
+	router.PathPrefix("/").Handler(httpSwagger.WrapHandler)
 
 	// Course routes
 	router.Handle("/courses", srv.CoursesHandler()).Methods("GET", "POST")
