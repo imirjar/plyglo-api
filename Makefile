@@ -2,6 +2,10 @@
 PROJECT_NAME := poliglotim-api
 GO_FILES := $(shell find . -name '*.go' -print)
 
+.PHONY: docs
+docs:
+	swag init -g internal/gateway/http/server.go -o docs/
+
 # Default target: build the application
 .PHONY: all
 all: build

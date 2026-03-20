@@ -1085,7 +1085,7 @@ var SwaggerInfo = &swag.Spec{
 	BasePath:         "/",
 	Schemes:          []string{},
 	Title:            "Language course API",
-	Description:      "API for the educational platform",
+	Description:      "Get a specific lesson by ID",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

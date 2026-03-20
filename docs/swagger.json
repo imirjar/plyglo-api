@@ -1,7 +1,7 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "API for the educational platform",
+        "description": "Get a specific lesson by ID",
         "title": "Language course API",
         "contact": {
             "name": "Artem Zadorov",

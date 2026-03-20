@@ -57,7 +57,24 @@ func (srv *HttpServer) Run(ctx context.Context) error {
 
 	router.Handle("/health", srv.HealthHandler())
 
-	return http.ListenAndServe(fmt.Sprintf(":%s", srv.Port), router)
+	server := &http.Server{
+		Addr:    fmt.Sprintf(":%s", srv.Port),
+		Handler: router,
+	}
+
+	go func() {
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			panic(err)
+		}
+	}()
+
+	// Wait for shutdown signal
+	<-ctx.Done()
+
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	return server.Shutdown(shutdownCtx)
 }
 
 // Service defines the interface for business logic operations

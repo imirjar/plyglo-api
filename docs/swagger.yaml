@@ -57,7 +57,7 @@ info:
   contact:
     email: azadorov1234@gmail.com
     name: Artem Zadorov
-  description: API for the educational platform
+  description: Get a specific lesson by ID
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT

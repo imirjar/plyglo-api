@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"log"
+	"os/signal"
+	"syscall"
 
 	"github.com/imirjar/poliglotim-api/internal/app"
 
@@ -24,6 +26,14 @@ import (
 func main() {
 	docs.SwaggerInfo.Title = "Language course API"
 
-	ctx := context.Background()
-	log.Fatal(app.Start(ctx))
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
+
+	log.Println("App started")
+
+	if err := app.Start(ctx); err != nil {
+		log.Fatal(err)
+	}
+
+	log.Println("App stopped gracefully")
 }

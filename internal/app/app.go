@@ -19,7 +19,11 @@ func Start(ctx context.Context) error {
 	if err != nil {
 		panic(err)
 	}
-	defer storage.Disconnect(ctx)
+	go func() {
+		<-ctx.Done()
+		log.Println("Shutting down storage...")
+		storage.Disconnect(context.Background())
+	}()
 
 	service := service.New(ctx)
 	srv := gw.New(ctx, config.Port)
