@@ -1,6 +1,7 @@
 package http
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 
@@ -8,31 +9,29 @@ import (
 	models "github.com/imirjar/poliglotim-api/internal/domain"
 )
 
-// LessonsHandler handles requests to the lessons collection
-// @Summary Manage lessons collection
-// @Description GET - returns list of lessons (filtered by chapter_id), POST - creates a new lesson
-// @Tags lessons
+// ChaptersHandler handles requests to the chapters collection
+// @Summary Manage chapters collection
+// @Description GET - returns list of chapters (filtered by course_id), POST - creates a new chapter
+// @Tags chapters
 // @Accept json
 // @Produce json
-// @Param chapter_id query string false "Chapter ID to filter lessons"
-// @Param lesson body models.Lesson false "New lesson data (for POST)"
-// @Success 200 {array} models.Lesson "List of lessons"
-// @Success 201 {object} models.Lesson "Created lesson"
+// @Param course_id query string false "Course ID to filter chapters"
+// @Param chapter body models.Chapter false "New chapter data (for POST)"
+// @Success 200 {array} models.Chapter "List of chapters"
+// @Success 201 {object} models.Chapter "Created chapter"
 // @Failure 400 {object} ErrorResponse "Invalid request format"
 // @Failure 500 {object} ErrorResponse "Internal server error"
 // @Security BearerAuth
-// @Router /lessons [get]
-// @Router /lessons [post]
-func (srv *HttpServer) LessonsHandler() http.HandlerFunc {
+// @Router /chapters [get]
+// @Router /chapters [post]
+func (srv *HttpServer) ChaptersHandler(ctx context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case "GET":
-			// vars := mux.Vars(r)
-			// lessonID := vars["lesson_id"]
 			queryParams := r.URL.Query()
-			chapterID := queryParams.Get("chapter_id")
+			chapterID := queryParams.Get("course_id")
 
-			lesson, err := srv.Service.ReadLessons(r.Context(), chapterID)
+			chapters, err := srv.Service.ReadChapters(r.Context(), chapterID)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
@@ -40,20 +39,20 @@ func (srv *HttpServer) LessonsHandler() http.HandlerFunc {
 
 			w.Header().Set("Content-Type", "application/json; charset=utf-8")
 			w.WriteHeader(http.StatusOK)
-			if err = json.NewEncoder(w).Encode(lesson); err != nil {
+			if err = json.NewEncoder(w).Encode(chapters); err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
 		case "POST":
-			var lesson models.Lesson
+			var chapter models.Chapter
 
-			if err := json.NewDecoder(r.Body).Decode(&lesson); err != nil {
+			if err := json.NewDecoder(r.Body).Decode(&chapter); err != nil {
 				http.Error(w, "Invalid JSON format: "+err.Error(), http.StatusBadRequest)
 				return
 			}
 			defer r.Body.Close()
 
-			createdChapter, err := srv.Service.CreateLesson(r.Context(), lesson)
+			createdChapter, err := srv.Service.CreateChapter(r.Context(), chapter)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
@@ -71,32 +70,31 @@ func (srv *HttpServer) LessonsHandler() http.HandlerFunc {
 	}
 }
 
-// LessonHandler handles requests to a specific lesson
-// @Summary Manage lesson by ID
-// @Description GET - returns lesson by ID, PUT - updates lesson, DELETE - removes lesson
-// @Tags lessons
+// ChapterHandler handles requests to a specific chapter
+// @Summary Manage chapter by ID
+// @Description GET - returns chapter by ID, PUT - updates chapter, DELETE - removes chapter
+// @Tags chapters
 // @Accept json
 // @Produce json
-// @Param lesson_id path string true "Lesson ID"
-// @Param lesson body models.Lesson false "Updated lesson data (for PUT)"
-// @Success 200 {object} models.Lesson "Lesson information"
-// @Success 201 {object} models.Lesson "Updated lesson"
-// @Success 204 "Lesson successfully deleted"
+// @Param chapter_id path string true "Chapter ID"
+// @Param chapter body models.Chapter false "Updated chapter data (for PUT)"
+// @Success 200 {object} models.Chapter "Chapter information"
+// @Success 201 {object} models.Chapter "Updated chapter"
+// @Success 204 "Chapter successfully deleted"
 // @Failure 400 {object} ErrorResponse "Invalid request format"
-// @Failure 404 {object} ErrorResponse "Lesson not found"
 // @Failure 500 {object} ErrorResponse "Internal server error"
 // @Security BearerAuth
-// @Router /lessons/{lesson_id} [get]
-// @Router /lessons/{lesson_id} [put]
-// @Router /lessons/{lesson_id} [delete]
-func (srv *HttpServer) LessonHandler() http.HandlerFunc {
+// @Router /chapters/{chapter_id} [get]
+// @Router /chapters/{chapter_id} [put]
+// @Router /chapters/{chapter_id} [delete]
+func (srv *HttpServer) ChapterHandler(ctx context.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
-		lessonID := vars["lesson_id"]
+		chapterID := vars["chapter_id"]
+
 		switch r.Method {
 		case "GET":
-
-			lesson, err := srv.Service.ReadLesson(r.Context(), lessonID)
+			chapters, err := srv.Service.ReadChapter(r.Context(), chapterID)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
@@ -104,21 +102,21 @@ func (srv *HttpServer) LessonHandler() http.HandlerFunc {
 
 			w.Header().Set("Content-Type", "application/json; charset=utf-8")
 			w.WriteHeader(http.StatusOK)
-			if err = json.NewEncoder(w).Encode(lesson); err != nil {
+			if err = json.NewEncoder(w).Encode(chapters); err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
 		case "PUT":
-			var lesson models.Lesson
+			var chapter models.Chapter
 
-			if err := json.NewDecoder(r.Body).Decode(&lesson); err != nil {
+			if err := json.NewDecoder(r.Body).Decode(&chapter); err != nil {
 				http.Error(w, "Invalid JSON format: "+err.Error(), http.StatusBadRequest)
 				return
 			}
 			defer r.Body.Close()
-			lesson.ID = lessonID
+			chapter.ID = chapterID
 
-			createdCourse, err := srv.Service.UpdateLesson(r.Context(), lesson)
+			createdChapter, err := srv.Service.UpdateChapter(r.Context(), chapter)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
@@ -126,13 +124,13 @@ func (srv *HttpServer) LessonHandler() http.HandlerFunc {
 
 			w.Header().Set("Content-Type", "application/json; charset=utf-8")
 			w.WriteHeader(http.StatusCreated)
-			if err = json.NewEncoder(w).Encode(createdCourse); err != nil {
+			if err = json.NewEncoder(w).Encode(createdChapter); err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
 		case "DELETE":
 
-			if err := srv.Service.DeleteLesson(r.Context(), lessonID); err != nil {
+			if err := srv.Service.DeleteChapter(r.Context(), chapterID); err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}

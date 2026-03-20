@@ -97,6 +97,11 @@ func (m *MockService) DeleteLesson(ctx context.Context, id string) error {
 	return args.Error(0)
 }
 
+func (m *MockService) Health(ctx context.Context) error {
+	args := m.Called(ctx)
+	return args.Error(0)
+}
+
 // Test CoursesHandler
 func TestCoursesHandler_GET(t *testing.T) {
 	mockService := new(MockService)
@@ -112,7 +117,7 @@ func TestCoursesHandler_GET(t *testing.T) {
 	req := httptest.NewRequest("GET", "/courses", nil)
 	w := httptest.NewRecorder()
 
-	handler := srv.CoursesHandler()
+	handler := srv.CoursesHandler(context.Background())
 	handler.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusOK, w.Code)
@@ -139,7 +144,7 @@ func TestCoursesHandler_POST(t *testing.T) {
 
 	mockService.On("CreateCourse", mock.Anything, newCourse).Return(createdCourse, nil)
 
-	handler := srv.CoursesHandler()
+	handler := srv.CoursesHandler(context.Background())
 	handler.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusCreated, w.Code)
@@ -159,7 +164,7 @@ func TestCoursesHandler_MethodNotAllowed(t *testing.T) {
 	req := httptest.NewRequest("PUT", "/courses", nil)
 	w := httptest.NewRecorder()
 
-	handler := srv.CoursesHandler()
+	handler := srv.CoursesHandler(context.Background())
 	handler.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusMethodNotAllowed, w.Code)
@@ -180,7 +185,7 @@ func TestCourseHandler_GET(t *testing.T) {
 	// Add path variables
 	req = mux.SetURLVars(req, map[string]string{"course_id": "1"})
 
-	handler := srv.CourseHandler()
+	handler := srv.CourseHandler(context.Background())
 	handler.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusOK, w.Code)
@@ -209,7 +214,7 @@ func TestCourseHandler_PUT(t *testing.T) {
 
 	mockService.On("UpdateCourse", mock.Anything, models.Course{ID: "1", Name: "Updated Course"}).Return(expectedCourse, nil)
 
-	handler := srv.CourseHandler()
+	handler := srv.CourseHandler(context.Background())
 	handler.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusCreated, w.Code)
@@ -233,7 +238,7 @@ func TestCourseHandler_DELETE(t *testing.T) {
 
 	req = mux.SetURLVars(req, map[string]string{"course_id": "1"})
 
-	handler := srv.CourseHandler()
+	handler := srv.CourseHandler(context.Background())
 	handler.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusNoContent, w.Code)
@@ -255,7 +260,7 @@ func TestChaptersHandler_GET(t *testing.T) {
 	req := httptest.NewRequest("GET", "/chapters?course_id=1", nil)
 	w := httptest.NewRecorder()
 
-	handler := srv.ChaptersHandler()
+	handler := srv.ChaptersHandler(context.Background())
 	handler.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusOK, w.Code)
@@ -282,7 +287,7 @@ func TestChaptersHandler_POST(t *testing.T) {
 
 	mockService.On("CreateChapter", mock.Anything, newChapter).Return(createdChapter, nil)
 
-	handler := srv.ChaptersHandler()
+	handler := srv.ChaptersHandler(context.Background())
 	handler.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusCreated, w.Code)
@@ -309,7 +314,7 @@ func TestChapterHandler_GET(t *testing.T) {
 
 	req = mux.SetURLVars(req, map[string]string{"chapter_id": "1"})
 
-	handler := srv.ChapterHandler()
+	handler := srv.ChapterHandler(context.Background())
 	handler.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusOK, w.Code)
@@ -338,7 +343,7 @@ func TestChapterHandler_PUT(t *testing.T) {
 
 	mockService.On("UpdateChapter", mock.Anything, models.Chapter{ID: "1", Name: "Updated Chapter", Course: "1"}).Return(expectedChapter, nil)
 
-	handler := srv.ChapterHandler()
+	handler := srv.ChapterHandler(context.Background())
 	handler.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusCreated, w.Code)
@@ -362,7 +367,7 @@ func TestChapterHandler_DELETE(t *testing.T) {
 
 	req = mux.SetURLVars(req, map[string]string{"chapter_id": "1"})
 
-	handler := srv.ChapterHandler()
+	handler := srv.ChapterHandler(context.Background())
 	handler.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusNoContent, w.Code)
@@ -384,7 +389,7 @@ func TestLessonsHandler_GET(t *testing.T) {
 	req := httptest.NewRequest("GET", "/lessons?chapter_id=1", nil)
 	w := httptest.NewRecorder()
 
-	handler := srv.LessonsHandler()
+	handler := srv.LessonsHandler(context.Background())
 	handler.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusOK, w.Code)
@@ -411,7 +416,7 @@ func TestLessonsHandler_POST(t *testing.T) {
 
 	mockService.On("CreateLesson", mock.Anything, newLesson).Return(createdLesson, nil)
 
-	handler := srv.LessonsHandler()
+	handler := srv.LessonsHandler(context.Background())
 	handler.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusCreated, w.Code)
@@ -438,7 +443,7 @@ func TestLessonHandler_GET(t *testing.T) {
 
 	req = mux.SetURLVars(req, map[string]string{"lesson_id": "1"})
 
-	handler := srv.LessonHandler()
+	handler := srv.LessonHandler(context.Background())
 	handler.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusOK, w.Code)
@@ -467,7 +472,7 @@ func TestLessonHandler_PUT(t *testing.T) {
 
 	mockService.On("UpdateLesson", mock.Anything, models.Lesson{ID: "1", Title: "Updated Lesson", Chapter: "1"}).Return(expectedLesson, nil)
 
-	handler := srv.LessonHandler()
+	handler := srv.LessonHandler(context.Background())
 	handler.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusCreated, w.Code)
@@ -491,7 +496,7 @@ func TestLessonHandler_DELETE(t *testing.T) {
 
 	req = mux.SetURLVars(req, map[string]string{"lesson_id": "1"})
 
-	handler := srv.LessonHandler()
+	handler := srv.LessonHandler(context.Background())
 	handler.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusNoContent, w.Code)
@@ -508,7 +513,7 @@ func TestCoursesHandler_GET_ServiceError(t *testing.T) {
 	req := httptest.NewRequest("GET", "/courses", nil)
 	w := httptest.NewRecorder()
 
-	handler := srv.CoursesHandler()
+	handler := srv.CoursesHandler(context.Background())
 	handler.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusInternalServerError, w.Code)
@@ -523,7 +528,7 @@ func TestCoursesHandler_POST_InvalidJSON(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 	w := httptest.NewRecorder()
 
-	handler := srv.CoursesHandler()
+	handler := srv.CoursesHandler(context.Background())
 	handler.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusBadRequest, w.Code)
@@ -541,7 +546,7 @@ func TestCourseHandler_GET_InvalidID(t *testing.T) {
 	w := httptest.NewRecorder()
 
 	// No path variables set - this will cause an empty ID to be passed to the service
-	handler := srv.CourseHandler()
+	handler := srv.CourseHandler(context.Background())
 	handler.ServeHTTP(w, req)
 
 	// You might want to add assertions here based on expected behavior
@@ -565,7 +570,7 @@ func TestChaptersHandler_GET_NoFilter(t *testing.T) {
 	req := httptest.NewRequest("GET", "/chapters", nil)
 	w := httptest.NewRecorder()
 
-	handler := srv.ChaptersHandler()
+	handler := srv.ChaptersHandler(context.Background())
 	handler.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusOK, w.Code)

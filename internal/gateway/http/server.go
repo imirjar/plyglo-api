@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"time"
 
+	"github.com/alexliesenfeld/health"
 	"github.com/gorilla/mux"
 	models "github.com/imirjar/poliglotim-api/internal/domain"
 	httpSwagger "github.com/swaggo/http-swagger"
@@ -28,30 +30,32 @@ type HttpServer struct {
 }
 
 // New creates a new HTTP server instance
-func New(port string) *HttpServer {
+func New(ctx context.Context, port string) *HttpServer {
 	return &HttpServer{
 		Port: port,
 	}
 }
 
 // Run starts the HTTP server and configures all routes
-func (srv *HttpServer) Run() error {
+func (srv *HttpServer) Run(ctx context.Context) error {
 	router := mux.NewRouter()
 
-	// Swagger documentation endpoint
-	router.PathPrefix("/").Handler(httpSwagger.WrapHandler)
-
 	// Course routes
-	router.Handle("/courses", srv.CoursesHandler()).Methods("GET", "POST")
-	router.Handle("/courses/{course_id}", srv.CourseHandler()).Methods("GET", "PUT", "DELETE")
+	router.Handle("/courses", srv.CoursesHandler(ctx)).Methods("GET", "POST")
+	router.Handle("/courses/{course_id}", srv.CourseHandler(ctx)).Methods("GET", "PUT", "DELETE")
 
 	// Chapter routes
-	router.Handle("/chapters", srv.ChaptersHandler()).Methods("GET", "POST")
-	router.Handle("/chapters/{chapter_id}", srv.ChapterHandler()).Methods("GET", "PUT", "DELETE")
+	router.Handle("/chapters", srv.ChaptersHandler(ctx)).Methods("GET", "POST")
+	router.Handle("/chapters/{chapter_id}", srv.ChapterHandler(ctx)).Methods("GET", "PUT", "DELETE")
 
 	// Lesson routes
-	router.Handle("/lessons", srv.LessonsHandler()).Methods("GET", "POST")
-	router.Handle("/lessons/{lesson_id}", srv.LessonHandler()).Methods("GET", "PUT", "DELETE")
+	router.Handle("/lessons", srv.LessonsHandler(ctx)).Methods("GET", "POST")
+	router.Handle("/lessons/{lesson_id}", srv.LessonHandler(ctx)).Methods("GET", "PUT", "DELETE")
+
+	// Swagger documentation endpoint
+	router.PathPrefix("/swagger/").Handler(httpSwagger.WrapHandler)
+
+	router.Handle("/health", srv.HealthHandler())
 
 	return http.ListenAndServe(fmt.Sprintf(":%s", srv.Port), router)
 }
@@ -110,10 +114,25 @@ type Service interface {
 	// @Description Delete a lesson by ID
 	// @Success 204
 	DeleteLesson(context.Context, string) error
+
+	Health(ctx context.Context) error
 }
 
 // ErrorResponse represents an error message returned to the client
 type ErrorResponse struct {
 	Error string `json:"error" example:"error description"`
 	Code  int    `json:"code,omitempty" example:"400"`
+}
+
+func (srv *HttpServer) HealthHandler() http.HandlerFunc {
+	h := health.NewChecker(
+		health.WithTimeout(5*time.Second),
+		health.WithCheck(health.Check{
+			Name:    "postgres",
+			Timeout: 2 * time.Second,
+			Check:   srv.Service.Health,
+		}),
+	)
+
+	return health.NewHandler(h)
 }

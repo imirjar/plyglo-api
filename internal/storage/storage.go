@@ -11,27 +11,23 @@ type Storage struct {
 	psql *pgxpool.Pool
 }
 
-func New(ctx context.Context) *Storage {
-	return &Storage{}
-}
-
-func (s *Storage) Connect(ctx context.Context, psqlConn string) error {
+func New(ctx context.Context, psqlConn string) (*Storage, error) {
+	var storage Storage
 	dbConn, err := pgxpool.New(ctx, psqlConn)
 	if err != nil {
-		return fmt.Errorf("failed to create connection pool: %w", err)
+		return nil, fmt.Errorf("failed to create connection pool: %w", err)
 	}
 
 	if err = dbConn.Ping(ctx); err != nil {
-		return fmt.Errorf("failed to ping database: %w", err)
+		return nil, fmt.Errorf("failed to ping database: %w", err)
 	}
 
-	s.psql = dbConn
+	storage.psql = dbConn
 
-	if err = s.up(ctx); err != nil {
-		return fmt.Errorf("failed to run migrations: %w", err)
+	if err = storage.up(ctx); err != nil {
+		return nil, fmt.Errorf("failed to run migrations: %w", err)
 	}
-
-	return nil
+	return &storage, nil
 }
 
 func (s *Storage) Disconnect(ctx context.Context) error {
@@ -39,6 +35,10 @@ func (s *Storage) Disconnect(ctx context.Context) error {
 		s.psql.Close()
 	}
 	return nil
+}
+
+func (s *Storage) Ping(ctx context.Context) error {
+	return s.psql.Ping(ctx)
 }
 
 func (s *Storage) up(ctx context.Context) error {
@@ -65,7 +65,7 @@ func (s *Storage) up(ctx context.Context) error {
 			CONSTRAINT chapters_course_id_fkey FOREIGN KEY (course_id) REFERENCES public.courses(id) ON DELETE CASCADE
 		);
 
-		CREATE INDEX idx_chapters_course_id ON public.chapters USING btree (course_id);
+		CREATE INDEX IF NOT EXISTS idx_chapters_course_id ON public.chapters USING btree (course_id);
 
 		CREATE TABLE IF NOT EXISTS public.lessons (
 			id uuid DEFAULT gen_random_uuid() NOT NULL,

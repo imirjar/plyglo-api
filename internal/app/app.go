@@ -4,26 +4,30 @@ import (
 	"context"
 	"log"
 
+	// "github.com/alexliesenfeld/health"
+
 	"github.com/imirjar/poliglotim-api/config"
-	srv "github.com/imirjar/poliglotim-api/internal/app/http"
+	gw "github.com/imirjar/poliglotim-api/internal/gateway/http"
 	"github.com/imirjar/poliglotim-api/internal/service"
 	"github.com/imirjar/poliglotim-api/internal/storage"
 )
 
 func Start(ctx context.Context) error {
-	config := config.New()
+	config := config.New(ctx)
 
-	storage := storage.New(ctx)
-	storage.Connect(ctx, config.DBConn)
+	storage, err := storage.New(ctx, config.DBConn)
+	if err != nil {
+		panic(err)
+	}
 	defer storage.Disconnect(ctx)
 
-	service := service.New()
-	srv := srv.New(config.Port)
+	service := service.New(ctx)
+	srv := gw.New(ctx, config.Port)
 
 	service.Storage = storage
 	srv.Service = service
 
 	log.Printf("Starting server on the port %s... \n", config.Port)
-	return srv.Run()
+	return srv.Run(ctx)
 
 }
