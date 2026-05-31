@@ -9,6 +9,7 @@ import (
 	"github.com/alexliesenfeld/health"
 	"github.com/gorilla/mux"
 	models "github.com/imirjar/poliglotim-api/internal/domain"
+	"github.com/rs/cors"
 	httpSwagger "github.com/swaggo/http-swagger"
 )
 
@@ -57,9 +58,20 @@ func (srv *HttpServer) Run(ctx context.Context) error {
 
 	router.Handle("/health", srv.HealthHandler())
 
+	// Настройка CORS
+	c := cors.New(cors.Options{
+		AllowedOrigins:   []string{"https://study.plyglo.com"}, // Укажите ваш фронтенд домен
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Content-Type", "Authorization"},
+		AllowCredentials: true,
+		MaxAge:           300, // Кэширование preflight запросов на 5 минут
+	})
+
+	handler := c.Handler(router)
+
 	server := &http.Server{
 		Addr:    fmt.Sprintf(":%s", srv.Port),
-		Handler: router,
+		Handler: handler,
 	}
 
 	go func() {
