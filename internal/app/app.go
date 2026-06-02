@@ -2,36 +2,81 @@ package app
 
 import (
 	"context"
+	"fmt"
 	"log"
+	"net/http"
+	"time"
 
 	// "github.com/alexliesenfeld/health"
 
 	"github.com/imirjar/poliglotim-api/config"
-	gw "github.com/imirjar/poliglotim-api/internal/gateway/http"
-	"github.com/imirjar/poliglotim-api/internal/service"
+	server "github.com/imirjar/poliglotim-api/internal/gateway/http"
+	service "github.com/imirjar/poliglotim-api/internal/service/study"
 	"github.com/imirjar/poliglotim-api/internal/storage"
 )
 
-func Start(ctx context.Context) error {
+type App struct {
+	server  Server
+	storage Storage
+}
+
+type Server interface {
+	Run(context.Context) error
+	Stop(context.Context) error
+}
+
+type Storage interface {
+	Conn(context.Context) error
+	Close(context.Context)
+}
+
+func New() *App {
+	ctx := context.Background()
 	config := config.New(ctx)
 
-	storage, err := storage.New(ctx, config.DBConn)
-	if err != nil {
-		panic(err)
+	storage := storage.New(ctx, storage.WithDB(config.DBConn))
+	service := service.New(ctx, service.WithStorage(storage))
+	server := server.New(ctx, server.WithServer(config.Port), server.WithService(service))
+
+	return &App{
+		server:  server,
+		storage: storage,
 	}
+}
+
+func (app *App) Start(ctx context.Context) error {
+	if err := app.storage.Conn(ctx); err != nil {
+		return fmt.Errorf("connect storage: %w", err)
+	}
+
+	serverErrors := make(chan error, 1)
+
 	go func() {
-		<-ctx.Done()
-		log.Println("Shutting down storage...")
-		storage.Disconnect(context.Background())
+		if err := app.server.Run(ctx); err != nil && err != http.ErrServerClosed {
+			serverErrors <- fmt.Errorf("server error: %w", err)
+		}
 	}()
 
-	service := service.New(ctx)
-	srv := gw.New(ctx, config.Port)
+	select {
+	case err := <-serverErrors:
+		app.storage.Close(context.Background())
+		return fmt.Errorf("server failed: %w", err)
 
-	service.Storage = storage
-	srv.Service = service
+	case <-ctx.Done():
+		log.Println("Starting graceful shutdown...")
 
-	log.Printf("Starting server on the port %s... \n", config.Port)
-	return srv.Run(ctx)
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
 
+		log.Println("Step 1: Stopping HTTP server...")
+		if err := app.server.Stop(shutdownCtx); err != nil {
+			app.storage.Close(context.Background())
+			return fmt.Errorf("stop server: %w", err)
+		}
+
+		log.Println("Step 2: Closing storage connections...")
+		app.storage.Close(context.Background())
+		log.Println("Application gracefully stopped")
+		return nil
+	}
 }

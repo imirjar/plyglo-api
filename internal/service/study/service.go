@@ -2,17 +2,28 @@ package service
 
 import (
 	"context"
-	"fmt"
 
 	models "github.com/imirjar/poliglotim-api/internal/domain"
 )
 
-func New(ctx context.Context) *Service {
-	return &Service{}
+func New(ctx context.Context, opts ...func(*Service)) *Service {
+	service := &Service{}
+
+	for _, opt := range opts {
+		opt(service)
+	}
+
+	return service
 }
 
 type Service struct {
 	Storage Storage
+}
+
+func WithStorage(storage Storage) func(*Service) {
+	return func(s *Service) {
+		s.Storage = storage
+	}
 }
 
 type Storage interface {
@@ -34,12 +45,12 @@ type Storage interface {
 	UpdateLesson(context.Context, models.Lesson) (models.Lesson, error)
 	DeleteLesson(context.Context, string) error
 
-	Ping(context.Context) error
+	// Ping(context.Context) error
 }
 
-func (s *Service) Health(ctx context.Context) error {
-	if s.Storage == nil {
-		return fmt.Errorf("storage not initialized")
-	}
-	return s.Storage.Ping(ctx)
-}
+// func (s *Service) Health(ctx context.Context) error {
+// 	if s.Storage == nil {
+// 		return fmt.Errorf("storage not initialized")
+// 	}
+// 	return s.Storage.Ping(ctx)
+// }

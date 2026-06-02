@@ -7,8 +7,6 @@ import (
 	"syscall"
 
 	"github.com/imirjar/poliglotim-api/internal/app"
-
-	"github.com/imirjar/poliglotim-api/docs"
 )
 
 // @title Language course API
@@ -24,16 +22,11 @@ import (
 // @host localhost:8080
 // @BasePath /
 func main() {
-	docs.SwaggerInfo.Title = "Language course API"
-
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
-	log.Println("App started")
-
+	app := app.New()
 	if err := app.Start(ctx); err != nil {
 		log.Fatal(err)
 	}
-
-	log.Println("App stopped gracefully")
 }

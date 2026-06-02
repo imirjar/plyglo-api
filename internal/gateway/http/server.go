@@ -27,66 +27,28 @@ import (
 // @BasePath /
 type HttpServer struct {
 	Port    string
+	server  *http.Server
+	router  *http.Handler
 	Service Service
 }
 
 // New creates a new HTTP server instance
-func New(ctx context.Context, port string) *HttpServer {
-	return &HttpServer{
-		Port: port,
+func New(ctx context.Context, opts ...func(*HttpServer)) *HttpServer {
+	server := &HttpServer{}
+
+	for _, opt := range opts {
+		opt(server)
 	}
+	return server
 }
 
 // Run starts the HTTP server and configures all routes
 func (srv *HttpServer) Run(ctx context.Context) error {
-	router := mux.NewRouter()
+	return srv.server.ListenAndServe()
+}
 
-	// Course routes
-	router.Handle("/courses", srv.CoursesHandler(ctx)).Methods("GET", "POST")
-	router.Handle("/courses/{course_id}", srv.CourseHandler(ctx)).Methods("GET", "PUT", "DELETE")
-
-	// Chapter routes
-	router.Handle("/chapters", srv.ChaptersHandler(ctx)).Methods("GET", "POST")
-	router.Handle("/chapters/{chapter_id}", srv.ChapterHandler(ctx)).Methods("GET", "PUT", "DELETE")
-
-	// Lesson routes
-	router.Handle("/lessons", srv.LessonsHandler(ctx)).Methods("GET", "POST")
-	router.Handle("/lessons/{lesson_id}", srv.LessonHandler(ctx)).Methods("GET", "PUT", "DELETE")
-
-	// Swagger documentation endpoint
-	router.PathPrefix("/swagger/").Handler(httpSwagger.WrapHandler)
-
-	router.Handle("/health", srv.HealthHandler())
-
-	// Настройка CORS
-	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{"https://study.plyglo.com"}, // Укажите ваш фронтенд домен
-		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowedHeaders:   []string{"Content-Type", "Authorization"},
-		AllowCredentials: true,
-		MaxAge:           300, // Кэширование preflight запросов на 5 минут
-	})
-
-	handler := c.Handler(router)
-
-	server := &http.Server{
-		Addr:    fmt.Sprintf(":%s", srv.Port),
-		Handler: handler,
-	}
-
-	go func() {
-		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			panic(err)
-		}
-	}()
-
-	// Wait for shutdown signal
-	<-ctx.Done()
-
-	shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	return server.Shutdown(shutdownCtx)
+func (srv *HttpServer) Stop(ctx context.Context) error {
+	return srv.server.Shutdown(ctx)
 }
 
 // Service defines the interface for business logic operations
@@ -144,8 +106,14 @@ type Service interface {
 	// @Success 204
 	DeleteLesson(context.Context, string) error
 
-	Health(ctx context.Context) error
+	// Health(ctx context.Context) error
 }
+
+//type Service interface {
+//	StudyService
+//	ProgressService
+//	TestService
+// }
 
 // ErrorResponse represents an error message returned to the client
 type ErrorResponse struct {
@@ -159,9 +127,54 @@ func (srv *HttpServer) HealthHandler() http.HandlerFunc {
 		health.WithCheck(health.Check{
 			Name:    "postgres",
 			Timeout: 2 * time.Second,
-			Check:   srv.Service.Health,
+			// Check:   srv.Service.Health,
 		}),
 	)
 
 	return health.NewHandler(h)
+}
+
+func WithService(service Service) func(*HttpServer) {
+	return func(s *HttpServer) {
+		s.Service = service
+	}
+}
+
+func WithServer(port string) func(*HttpServer) {
+
+	return func(srv *HttpServer) {
+		ctx := context.Background()
+		router := mux.NewRouter()
+
+		// Course routes
+		router.Handle("/courses", srv.CoursesHandler(ctx)).Methods("GET", "POST")
+		router.Handle("/courses/{course_id}", srv.CourseHandler(ctx)).Methods("GET", "PUT", "DELETE")
+
+		// Chapter routes
+		router.Handle("/chapters", srv.ChaptersHandler(ctx)).Methods("GET", "POST")
+		router.Handle("/chapters/{chapter_id}", srv.ChapterHandler(ctx)).Methods("GET", "PUT", "DELETE")
+
+		// Lesson routes
+		router.Handle("/lessons", srv.LessonsHandler(ctx)).Methods("GET", "POST")
+		router.Handle("/lessons/{lesson_id}", srv.LessonHandler(ctx)).Methods("GET", "PUT", "DELETE")
+
+		// Swagger documentation endpoint
+		router.PathPrefix("/swagger/").Handler(httpSwagger.WrapHandler)
+
+		router.Handle("/health", srv.HealthHandler())
+
+		// Настройка CORS
+		c := cors.New(cors.Options{
+			AllowedOrigins:   []string{"https://study.plyglo.com"}, // Укажите ваш фронтенд домен
+			AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+			AllowedHeaders:   []string{"Content-Type", "Authorization"},
+			AllowCredentials: true,
+			MaxAge:           300, // Кэширование preflight запросов на 5 минут
+		})
+
+		srv.server = &http.Server{
+			Addr:    fmt.Sprintf(":%s", port),
+			Handler: c.Handler(router),
+		}
+	}
 }
