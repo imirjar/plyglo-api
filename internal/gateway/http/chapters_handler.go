@@ -1,7 +1,6 @@
 package http
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
 
@@ -24,7 +23,7 @@ import (
 // @Security BearerAuth
 // @Router /chapters [get]
 // @Router /chapters [post]
-func (srv *HttpServer) ChaptersHandler(ctx context.Context) http.HandlerFunc {
+func (srv *HttpServer) ChaptersHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case "GET":
@@ -87,7 +86,7 @@ func (srv *HttpServer) ChaptersHandler(ctx context.Context) http.HandlerFunc {
 // @Router /chapters/{chapter_id} [get]
 // @Router /chapters/{chapter_id} [put]
 // @Router /chapters/{chapter_id} [delete]
-func (srv *HttpServer) ChapterHandler(ctx context.Context) http.HandlerFunc {
+func (srv *HttpServer) ChapterHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		chapterID := vars["chapter_id"]

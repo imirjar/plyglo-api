@@ -12,7 +12,7 @@ type Storage struct {
 	psql       *pgxpool.Pool
 }
 
-func New(ctx context.Context, opts ...func(*Storage)) *Storage {
+func New(opts ...func(*Storage)) *Storage {
 	storage := &Storage{}
 
 	for _, opt := range opts {
@@ -43,7 +43,7 @@ func (s *Storage) Conn(ctx context.Context) error {
 	return nil
 }
 
-func (s *Storage) Close(ctx context.Context) {
+func (s *Storage) Close() {
 	if s.psql != nil {
 		s.psql.Close()
 		log.Println("Database connection closed")

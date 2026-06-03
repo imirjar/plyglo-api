@@ -1,7 +1,6 @@
 package http
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
 
@@ -23,7 +22,7 @@ import (
 // @Security BearerAuth
 // @Router /courses [get]
 // @Router /courses [post]
-func (srv *HttpServer) CoursesHandler(ctx context.Context) http.HandlerFunc {
+func (srv *HttpServer) CoursesHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case "GET":
@@ -83,7 +82,7 @@ func (srv *HttpServer) CoursesHandler(ctx context.Context) http.HandlerFunc {
 // @Router /courses/{course_id} [get]
 // @Router /courses/{course_id} [put]
 // @Router /courses/{course_id} [delete]
-func (srv *HttpServer) CourseHandler(ctx context.Context) http.HandlerFunc {
+func (srv *HttpServer) CourseHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		courseID := vars["course_id"]

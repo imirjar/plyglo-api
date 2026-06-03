@@ -28,12 +28,11 @@ import (
 type HttpServer struct {
 	Port    string
 	server  *http.Server
-	router  *http.Handler
 	Service Service
 }
 
 // New creates a new HTTP server instance
-func New(ctx context.Context, opts ...func(*HttpServer)) *HttpServer {
+func New(opts ...func(*HttpServer)) *HttpServer {
 	server := &HttpServer{}
 
 	for _, opt := range opts {
@@ -43,7 +42,7 @@ func New(ctx context.Context, opts ...func(*HttpServer)) *HttpServer {
 }
 
 // Run starts the HTTP server and configures all routes
-func (srv *HttpServer) Run(ctx context.Context) error {
+func (srv *HttpServer) Run() error {
 	return srv.server.ListenAndServe()
 }
 
@@ -143,20 +142,19 @@ func WithService(service Service) func(*HttpServer) {
 func WithServer(port string) func(*HttpServer) {
 
 	return func(srv *HttpServer) {
-		ctx := context.Background()
 		router := mux.NewRouter()
 
 		// Course routes
-		router.Handle("/courses", srv.CoursesHandler(ctx)).Methods("GET", "POST")
-		router.Handle("/courses/{course_id}", srv.CourseHandler(ctx)).Methods("GET", "PUT", "DELETE")
+		router.Handle("/courses", srv.CoursesHandler()).Methods("GET", "POST")
+		router.Handle("/courses/{course_id}", srv.CourseHandler()).Methods("GET", "PUT", "DELETE")
 
 		// Chapter routes
-		router.Handle("/chapters", srv.ChaptersHandler(ctx)).Methods("GET", "POST")
-		router.Handle("/chapters/{chapter_id}", srv.ChapterHandler(ctx)).Methods("GET", "PUT", "DELETE")
+		router.Handle("/chapters", srv.ChaptersHandler()).Methods("GET", "POST")
+		router.Handle("/chapters/{chapter_id}", srv.ChapterHandler()).Methods("GET", "PUT", "DELETE")
 
 		// Lesson routes
-		router.Handle("/lessons", srv.LessonsHandler(ctx)).Methods("GET", "POST")
-		router.Handle("/lessons/{lesson_id}", srv.LessonHandler(ctx)).Methods("GET", "PUT", "DELETE")
+		router.Handle("/lessons", srv.LessonsHandler()).Methods("GET", "POST")
+		router.Handle("/lessons/{lesson_id}", srv.LessonHandler()).Methods("GET", "PUT", "DELETE")
 
 		// Swagger documentation endpoint
 		router.PathPrefix("/swagger/").Handler(httpSwagger.WrapHandler)

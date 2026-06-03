@@ -21,22 +21,22 @@ type App struct {
 }
 
 type Server interface {
-	Run(context.Context) error
+	Run() error
 	Stop(context.Context) error
 }
 
 type Storage interface {
 	Conn(context.Context) error
-	Close(context.Context)
+	Close()
 }
 
 func New() *App {
 	ctx := context.Background()
 	config := config.New(ctx)
 
-	storage := storage.New(ctx, storage.WithDB(config.DBConn))
-	service := service.New(ctx, service.WithStorage(storage))
-	server := server.New(ctx, server.WithServer(config.Port), server.WithService(service))
+	storage := storage.New(storage.WithDB(config.DBConn))
+	service := service.New(service.WithStorage(storage))
+	server := server.New(server.WithServer(config.Port), server.WithService(service))
 
 	return &App{
 		server:  server,
@@ -52,14 +52,14 @@ func (app *App) Start(ctx context.Context) error {
 	serverErrors := make(chan error, 1)
 
 	go func() {
-		if err := app.server.Run(ctx); err != nil && err != http.ErrServerClosed {
+		if err := app.server.Run(); err != nil && err != http.ErrServerClosed {
 			serverErrors <- fmt.Errorf("server error: %w", err)
 		}
 	}()
 
 	select {
 	case err := <-serverErrors:
-		app.storage.Close(context.Background())
+		app.storage.Close()
 		return fmt.Errorf("server failed: %w", err)
 
 	case <-ctx.Done():
@@ -70,12 +70,12 @@ func (app *App) Start(ctx context.Context) error {
 
 		log.Println("Step 1: Stopping HTTP server...")
 		if err := app.server.Stop(shutdownCtx); err != nil {
-			app.storage.Close(context.Background())
+			app.storage.Close()
 			return fmt.Errorf("stop server: %w", err)
 		}
 
 		log.Println("Step 2: Closing storage connections...")
-		app.storage.Close(context.Background())
+		app.storage.Close()
 		log.Println("Application gracefully stopped")
 		return nil
 	}

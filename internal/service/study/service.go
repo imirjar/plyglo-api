@@ -6,7 +6,7 @@ import (
 	models "github.com/imirjar/poliglotim-api/internal/domain"
 )
 
-func New(ctx context.Context, opts ...func(*Service)) *Service {
+func New(opts ...func(*Service)) *Service {
 	service := &Service{}
 
 	for _, opt := range opts {
