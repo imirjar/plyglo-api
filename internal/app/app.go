@@ -31,8 +31,7 @@ type Storage interface {
 }
 
 func New() *App {
-	ctx := context.Background()
-	config := config.New(ctx)
+	config := config.New()
 
 	storage := storage.New(storage.WithDB(config.DBConn))
 	service := service.New(service.WithStorage(storage))

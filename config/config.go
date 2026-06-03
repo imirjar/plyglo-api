@@ -1,7 +1,6 @@
 package config
 
 import (
-	"context"
 	"log"
 
 	"github.com/caarlos0/env/v11"
@@ -12,7 +11,7 @@ type Config struct {
 	DBConn string `env:"DB_CONN"`
 }
 
-func New(ctx context.Context) *Config {
+func New() *Config {
 	cfg := Config{}
 
 	// Всегда читаем переменные окружения (перезаписывают файл)
