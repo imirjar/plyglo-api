@@ -3,6 +3,7 @@ package http
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"time"
 
@@ -47,6 +48,7 @@ func (srv *HttpServer) Run() error {
 }
 
 func (srv *HttpServer) Stop(ctx context.Context) error {
+	log.Println("Stopping HTTP server...")
 	return srv.server.Shutdown(ctx)
 }
 

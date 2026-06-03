@@ -3,9 +3,7 @@ package app
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
-	"time"
 
 	// "github.com/alexliesenfeld/health"
 
@@ -48,34 +46,19 @@ func (app *App) Start(ctx context.Context) error {
 		return fmt.Errorf("connect storage: %w", err)
 	}
 
-	serverErrors := make(chan error, 1)
-
-	go func() {
-		if err := app.server.Run(); err != nil && err != http.ErrServerClosed {
-			serverErrors <- fmt.Errorf("server error: %w", err)
-		}
-	}()
-
-	select {
-	case err := <-serverErrors:
-		app.storage.Close()
-		return fmt.Errorf("server failed: %w", err)
-
-	case <-ctx.Done():
-		log.Println("Starting graceful shutdown...")
-
-		shutdownCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-		defer cancel()
-
-		log.Println("Step 1: Stopping HTTP server...")
-		if err := app.server.Stop(shutdownCtx); err != nil {
-			app.storage.Close()
-			return fmt.Errorf("stop server: %w", err)
-		}
-
-		log.Println("Step 2: Closing storage connections...")
-		app.storage.Close()
-		log.Println("Application gracefully stopped")
-		return nil
+	if err := app.server.Run(); err != nil && err != http.ErrServerClosed {
+		return fmt.Errorf("server error: %w", err)
 	}
+
+	return nil
+}
+
+func (app *App) Stop(ctx context.Context) error {
+	if err := app.server.Stop(ctx); err != nil {
+		app.storage.Close()
+		return fmt.Errorf("stop server: %w", err)
+	}
+
+	app.storage.Close()
+	return nil
 }
