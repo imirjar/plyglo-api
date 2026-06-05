@@ -8,7 +8,7 @@ import (
 	// "github.com/alexliesenfeld/health"
 
 	"github.com/imirjar/poliglotim-api/config"
-	server "github.com/imirjar/poliglotim-api/internal/gateway/http"
+	server "github.com/imirjar/poliglotim-api/internal/controller/http"
 	service "github.com/imirjar/poliglotim-api/internal/service/study"
 	"github.com/imirjar/poliglotim-api/internal/storage"
 )
