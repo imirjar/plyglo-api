@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	models "github.com/imirjar/poliglotim-api/internal/domain"
+	"github.com/imirjar/poliglotim-api/internal/models"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -96,7 +96,7 @@ func (s *Storage) InsertLesson(ctx context.Context, lesson models.Lesson) (model
 		query,
 		lesson.Title,
 		lesson.Text,
-		lesson.Chapter,
+		lesson.ChapterID,
 	)
 
 	var createdLesson models.Lesson
@@ -104,7 +104,7 @@ func (s *Storage) InsertLesson(ctx context.Context, lesson models.Lesson) (model
 		&createdLesson.ID,
 		&createdLesson.Title,
 		&createdLesson.Text,
-		&createdLesson.Chapter,
+		&createdLesson.ChapterID,
 		&createdLesson.Updated,
 	)
 	if err != nil {
@@ -130,12 +130,12 @@ func (s *Storage) UpdateLesson(ctx context.Context, lesson models.Lesson) (model
 		query,
 		lesson.Title,
 		lesson.Text,
-		lesson.Chapter,
+		lesson.ChapterID,
 	).Scan(
 		&updatedLesson.ID,
 		&updatedLesson.Title,
 		&updatedLesson.Text,
-		&updatedLesson.Chapter,
+		&updatedLesson.ChapterID,
 		&updatedLesson.Updated,
 	)
 

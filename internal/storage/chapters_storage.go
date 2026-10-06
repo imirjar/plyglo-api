@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 
-	models "github.com/imirjar/poliglotim-api/internal/domain"
+	"github.com/imirjar/poliglotim-api/internal/models"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -53,7 +53,7 @@ func (s *Storage) SelectChapters(ctx context.Context, courseID string) ([]models
 			&chapter.ID,
 			&chapter.Name,
 			&chapter.Description,
-			&chapter.Course,
+			&chapter.CourseID,
 			&chapter.Position,
 			&chapter.Updated,
 		)
@@ -93,7 +93,7 @@ func (s *Storage) SelectChapter(ctx context.Context, chapterID string) (models.C
 		&chapter.ID,
 		&chapter.Name,
 		&chapter.Description,
-		&chapter.Course,
+		&chapter.CourseID,
 		&chapter.Position,
 		&chapter.Updated,
 	)
@@ -114,7 +114,7 @@ func (s *Storage) InsertChapter(ctx context.Context, chapter models.Chapter) (mo
 		query,
 		chapter.Name,
 		chapter.Description,
-		chapter.Course,
+		chapter.CourseID,
 		chapter.Position,
 	)
 
@@ -123,7 +123,7 @@ func (s *Storage) InsertChapter(ctx context.Context, chapter models.Chapter) (mo
 		&createdChapter.ID,
 		&createdChapter.Name,
 		&createdChapter.Description,
-		&createdChapter.Course,
+		&createdChapter.CourseID,
 		&createdChapter.Position,
 		&createdChapter.Updated,
 	)
@@ -154,7 +154,7 @@ func (s *Storage) UpdateChapter(ctx context.Context, chapter models.Chapter) (mo
 		chapter.Name,
 		chapter.Description,
 		chapter.Position,
-		chapter.Course,
+		chapter.CourseID,
 		chapter.Updated,
 		chapter.ID,
 	).Scan(
@@ -162,7 +162,7 @@ func (s *Storage) UpdateChapter(ctx context.Context, chapter models.Chapter) (mo
 		&updatedChapter.Name,
 		&updatedChapter.Description,
 		&updatedChapter.Position,
-		&updatedChapter.Course,
+		&updatedChapter.CourseID,
 		&updatedChapter.Updated,
 	)
 

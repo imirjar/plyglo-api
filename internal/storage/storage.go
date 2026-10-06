@@ -33,13 +33,13 @@ func (s *Storage) Conn(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	// defer dbConn.Close()
 
 	if err = dbConn.Ping(ctx); err != nil {
 		return err
 	}
 
 	s.psql = dbConn
+
 	return nil
 }
 

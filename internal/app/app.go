@@ -9,8 +9,11 @@ import (
 
 	"github.com/imirjar/poliglotim-api/config"
 	server "github.com/imirjar/poliglotim-api/internal/controller/http"
-	service "github.com/imirjar/poliglotim-api/internal/service/study"
-	"github.com/imirjar/poliglotim-api/internal/storage"
+	ss "github.com/imirjar/poliglotim-api/internal/service"
+
+	// ss "github.com/imirjar/poliglotim-api/internal/service"
+
+	sst "github.com/imirjar/poliglotim-api/internal/storage"
 )
 
 type App struct {
@@ -31,9 +34,11 @@ type Storage interface {
 func New() *App {
 	config := config.New()
 
-	storage := storage.New(storage.WithDB(config.DBConn))
-	service := service.New(service.WithStorage(storage))
-	server := server.New(server.WithServer(config.Port), server.WithService(service))
+	storage := sst.New(sst.WithDB(config.DBConn))
+	// progress := progress.New()
+	// log.Print(progress.AddLesson)
+	service := ss.New(ss.WithStorage(storage))
+	server := server.New(server.WithClient(), server.WithServer(config.Port), server.WithService(service))
 
 	return &App{
 		server:  server,

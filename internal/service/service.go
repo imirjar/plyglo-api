@@ -1,13 +1,13 @@
-package service
+package study_service
 
 import (
 	"context"
 
-	models "github.com/imirjar/poliglotim-api/internal/domain"
+	"github.com/imirjar/poliglotim-api/internal/models"
 )
 
-func New(opts ...func(*Service)) *Service {
-	service := &Service{}
+func New(opts ...func(*StudyService)) *StudyService {
+	service := &StudyService{}
 
 	for _, opt := range opts {
 		opt(service)
@@ -16,12 +16,12 @@ func New(opts ...func(*Service)) *Service {
 	return service
 }
 
-type Service struct {
+type StudyService struct {
 	Storage Storage
 }
 
-func WithStorage(storage Storage) func(*Service) {
-	return func(s *Service) {
+func WithStorage(storage Storage) func(*StudyService) {
+	return func(s *StudyService) {
 		s.Storage = storage
 	}
 }

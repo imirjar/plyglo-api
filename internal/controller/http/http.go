@@ -9,7 +9,8 @@ import (
 
 	"github.com/alexliesenfeld/health"
 	"github.com/gorilla/mux"
-	models "github.com/imirjar/poliglotim-api/internal/domain"
+	"github.com/imirjar/poliglotim-api/internal/controller/http/client"
+	"github.com/imirjar/poliglotim-api/internal/models"
 	"github.com/rs/cors"
 	httpSwagger "github.com/swaggo/http-swagger"
 )
@@ -26,15 +27,15 @@ import (
 
 // @host localhost:8080
 // @BasePath /
-type HttpServer struct {
-	Port    string
+type HTTP struct {
 	server  *http.Server
+	client  Client
 	Service Service
 }
 
 // New creates a new HTTP server instance
-func New(opts ...func(*HttpServer)) *HttpServer {
-	server := &HttpServer{}
+func New(opts ...func(*HTTP)) *HTTP {
+	server := &HTTP{}
 
 	for _, opt := range opts {
 		opt(server)
@@ -43,11 +44,12 @@ func New(opts ...func(*HttpServer)) *HttpServer {
 }
 
 // Run starts the HTTP server and configures all routes
-func (srv *HttpServer) Run() error {
+func (srv *HTTP) Run() error {
+	log.Printf("HTTP server is running on %s", srv.server.Addr)
 	return srv.server.ListenAndServe()
 }
 
-func (srv *HttpServer) Stop(ctx context.Context) error {
+func (srv *HTTP) Stop(ctx context.Context) error {
 	log.Println("Stopping HTTP server...")
 	return srv.server.Shutdown(ctx)
 }
@@ -86,6 +88,9 @@ type Service interface {
 	// @Description Get a specific chapter by ID
 	ReadChapter(context.Context, string) (models.Chapter, error)
 
+	// @Description Get a specific chapter by ID
+	ReadNextChapter(context.Context, string) (models.Chapter, error)
+
 	// @Description Delete a chapter by ID
 	// @Success 204
 	DeleteChapter(context.Context, string) error
@@ -103,6 +108,9 @@ type Service interface {
 	// @Description Get a specific lesson by ID
 	ReadLesson(context.Context, string) (models.Lesson, error)
 
+	// @Description Get a specific lesson by ID
+	ReadNextLesson(context.Context, string) (models.Lesson, error)
+
 	// @Description Delete a lesson by ID
 	// @Success 204
 	DeleteLesson(context.Context, string) error
@@ -110,11 +118,9 @@ type Service interface {
 	// Health(ctx context.Context) error
 }
 
-//type Service interface {
-//	StudyService
-//	ProgressService
-//	TestService
-// }
+type Client interface {
+	ValidateToken(string) (bool, error)
+}
 
 // ErrorResponse represents an error message returned to the client
 type ErrorResponse struct {
@@ -122,7 +128,7 @@ type ErrorResponse struct {
 	Code  int    `json:"code,omitempty" example:"400"`
 }
 
-func (srv *HttpServer) HealthHandler() http.HandlerFunc {
+func (srv *HTTP) HealthHandler() http.HandlerFunc {
 	h := health.NewChecker(
 		health.WithTimeout(5*time.Second),
 		health.WithCheck(health.Check{
@@ -135,28 +141,41 @@ func (srv *HttpServer) HealthHandler() http.HandlerFunc {
 	return health.NewHandler(h)
 }
 
-func WithService(service Service) func(*HttpServer) {
-	return func(s *HttpServer) {
+func WithService(service Service) func(*HTTP) {
+	return func(s *HTTP) {
 		s.Service = service
 	}
 }
 
-func WithServer(port string) func(*HttpServer) {
+func WithClient() func(*HTTP) {
+	return func(srv *HTTP) {
+		srv.client = client.New()
+	}
+}
 
-	return func(srv *HttpServer) {
+func WithServer(port string) func(*HTTP) {
+
+	return func(srv *HTTP) {
 		router := mux.NewRouter()
 
 		// Course routes
-		router.Handle("/courses", srv.CoursesHandler()).Methods("GET", "POST")
-		router.Handle("/courses/{course_id}", srv.CourseHandler()).Methods("GET", "PUT", "DELETE")
+		courses := router.PathPrefix("/courses").Subrouter()
+		courses.Handle("", srv.CoursesHandler()).Methods("GET", "POST")
+		courses.Handle("/{course_id}", srv.CourseHandler()).Methods("GET", "PUT", "DELETE")
 
 		// Chapter routes
-		router.Handle("/chapters", srv.ChaptersHandler()).Methods("GET", "POST")
-		router.Handle("/chapters/{chapter_id}", srv.ChapterHandler()).Methods("GET", "PUT", "DELETE")
+		chapters := router.PathPrefix("/chapters").Subrouter()
+		chapters.Use(srv.authMiddleware)
+		chapters.Handle("", srv.ChaptersHandler()).Methods("GET", "POST")
+		chapters.Handle("/{chapter_id}", srv.ChapterHandler()).Methods("GET", "PUT", "DELETE")
+		chapters.Handle("/{chapter_id}/next", srv.NextChapterHandler()).Methods("GET")
 
 		// Lesson routes
-		router.Handle("/lessons", srv.LessonsHandler()).Methods("GET", "POST")
-		router.Handle("/lessons/{lesson_id}", srv.LessonHandler()).Methods("GET", "PUT", "DELETE")
+		lessons := router.PathPrefix("/lessons").Subrouter()
+		lessons.Use(srv.authMiddleware)
+		lessons.Handle("", srv.LessonsHandler()).Methods("GET", "POST")
+		lessons.Handle("/{lesson_id}", srv.LessonHandler()).Methods("GET", "PUT", "DELETE")
+		// lessons.Handle("/{lesson_id}/next", srv.NextLessonHandler()).Methods("GET")
 
 		// Swagger documentation endpoint
 		router.PathPrefix("/swagger/").Handler(httpSwagger.WrapHandler)

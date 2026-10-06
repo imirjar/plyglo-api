@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 
-	models "github.com/imirjar/poliglotim-api/internal/domain"
+	"github.com/imirjar/poliglotim-api/internal/models"
 	"github.com/jackc/pgx/v5"
 )
 

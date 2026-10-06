@@ -1,5 +1,5 @@
 # Stage 1: Сборка (использует golang образ)
-FROM golang:1.26.1-alpine AS builder
+FROM golang:alpine3.24 AS builder
 WORKDIR /app
 COPY . .
 RUN go build -o app cmd/main.go

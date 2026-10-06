@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/gorilla/mux"
-	models "github.com/imirjar/poliglotim-api/internal/domain"
+	"github.com/imirjar/poliglotim-api/internal/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -61,6 +61,11 @@ func (m *MockService) UpdateChapter(ctx context.Context, chapter models.Chapter)
 	return args.Get(0).(models.Chapter), args.Error(1)
 }
 
+func (m *MockService) ReadNextChapter(ctx context.Context, id string) (models.Chapter, error) {
+	args := m.Called(ctx, id)
+	return args.Get(0).(models.Chapter), args.Error(1)
+}
+
 func (m *MockService) ReadChapter(ctx context.Context, id string) (models.Chapter, error) {
 	args := m.Called(ctx, id)
 	return args.Get(0).(models.Chapter), args.Error(1)
@@ -92,6 +97,11 @@ func (m *MockService) ReadLesson(ctx context.Context, id string) (models.Lesson,
 	return args.Get(0).(models.Lesson), args.Error(1)
 }
 
+func (m *MockService) ReadNextLesson(ctx context.Context, id string) (models.Lesson, error) {
+	args := m.Called(ctx, id)
+	return args.Get(0).(models.Lesson), args.Error(1)
+}
+
 func (m *MockService) DeleteLesson(ctx context.Context, id string) error {
 	args := m.Called(ctx, id)
 	return args.Error(0)
@@ -105,7 +115,7 @@ func (m *MockService) Health(ctx context.Context) error {
 // Test CoursesHandler
 func TestCoursesHandler_GET(t *testing.T) {
 	mockService := new(MockService)
-	srv := &HttpServer{Service: mockService}
+	srv := &HTTP{Service: mockService}
 
 	expectedCourses := []models.Course{
 		{ID: "1", Name: "Course 1"},
@@ -132,7 +142,7 @@ func TestCoursesHandler_GET(t *testing.T) {
 
 func TestCoursesHandler_POST(t *testing.T) {
 	mockService := new(MockService)
-	srv := &HttpServer{Service: mockService}
+	srv := &HTTP{Service: mockService}
 
 	newCourse := models.Course{Name: "New Course"}
 	createdCourse := models.Course{ID: "3", Name: "New Course"}
@@ -159,7 +169,7 @@ func TestCoursesHandler_POST(t *testing.T) {
 
 func TestCoursesHandler_MethodNotAllowed(t *testing.T) {
 	mockService := new(MockService)
-	srv := &HttpServer{Service: mockService}
+	srv := &HTTP{Service: mockService}
 
 	req := httptest.NewRequest("PUT", "/courses", nil)
 	w := httptest.NewRecorder()
@@ -173,7 +183,7 @@ func TestCoursesHandler_MethodNotAllowed(t *testing.T) {
 // Test CourseHandler
 func TestCourseHandler_GET(t *testing.T) {
 	mockService := new(MockService)
-	srv := &HttpServer{Service: mockService}
+	srv := &HTTP{Service: mockService}
 
 	expectedCourse := models.Course{ID: "1", Name: "Course 1"}
 
@@ -200,7 +210,7 @@ func TestCourseHandler_GET(t *testing.T) {
 
 func TestCourseHandler_PUT(t *testing.T) {
 	mockService := new(MockService)
-	srv := &HttpServer{Service: mockService}
+	srv := &HTTP{Service: mockService}
 
 	updatedCourse := models.Course{Name: "Updated Course"}
 	expectedCourse := models.Course{ID: "1", Name: "Updated Course"}
@@ -229,7 +239,7 @@ func TestCourseHandler_PUT(t *testing.T) {
 
 func TestCourseHandler_DELETE(t *testing.T) {
 	mockService := new(MockService)
-	srv := &HttpServer{Service: mockService}
+	srv := &HTTP{Service: mockService}
 
 	mockService.On("DeleteCourse", mock.Anything, "1").Return(nil)
 
@@ -248,11 +258,11 @@ func TestCourseHandler_DELETE(t *testing.T) {
 // Test ChaptersHandler
 func TestChaptersHandler_GET(t *testing.T) {
 	mockService := new(MockService)
-	srv := &HttpServer{Service: mockService}
+	srv := &HTTP{Service: mockService}
 
 	expectedChapters := []models.Chapter{
-		{ID: "1", Name: "Chapter 1", Course: "1"},
-		{ID: "2", Name: "Chapter 2", Course: "1"},
+		{ID: "1", Name: "Chapter 1", CourseID: "1"},
+		{ID: "2", Name: "Chapter 2", CourseID: "1"},
 	}
 
 	mockService.On("ReadChapters", mock.Anything, "1").Return(expectedChapters, nil)
@@ -275,10 +285,10 @@ func TestChaptersHandler_GET(t *testing.T) {
 
 func TestChaptersHandler_POST(t *testing.T) {
 	mockService := new(MockService)
-	srv := &HttpServer{Service: mockService}
+	srv := &HTTP{Service: mockService}
 
-	newChapter := models.Chapter{Name: "New Chapter", Course: "1"}
-	createdChapter := models.Chapter{ID: "3", Name: "New Chapter", Course: "1"}
+	newChapter := models.Chapter{Name: "New Chapter", CourseID: "1"}
+	createdChapter := models.Chapter{ID: "3", Name: "New Chapter", CourseID: "1"}
 
 	body, _ := json.Marshal(newChapter)
 	req := httptest.NewRequest("POST", "/chapters", bytes.NewReader(body))
@@ -303,9 +313,9 @@ func TestChaptersHandler_POST(t *testing.T) {
 // Test ChapterHandler
 func TestChapterHandler_GET(t *testing.T) {
 	mockService := new(MockService)
-	srv := &HttpServer{Service: mockService}
+	srv := &HTTP{Service: mockService}
 
-	expectedChapter := models.Chapter{ID: "1", Name: "Chapter 1", Course: "1"}
+	expectedChapter := models.Chapter{ID: "1", Name: "Chapter 1", CourseID: "1"}
 
 	mockService.On("ReadChapter", mock.Anything, "1").Return(expectedChapter, nil)
 
@@ -329,10 +339,10 @@ func TestChapterHandler_GET(t *testing.T) {
 
 func TestChapterHandler_PUT(t *testing.T) {
 	mockService := new(MockService)
-	srv := &HttpServer{Service: mockService}
+	srv := &HTTP{Service: mockService}
 
-	updatedChapter := models.Chapter{Name: "Updated Chapter", Course: "1"}
-	expectedChapter := models.Chapter{ID: "1", Name: "Updated Chapter", Course: "1"}
+	updatedChapter := models.Chapter{Name: "Updated Chapter", CourseID: "1"}
+	expectedChapter := models.Chapter{ID: "1", Name: "Updated Chapter", CourseID: "1"}
 
 	body, _ := json.Marshal(updatedChapter)
 	req := httptest.NewRequest("PUT", "/chapters/1", bytes.NewReader(body))
@@ -341,7 +351,7 @@ func TestChapterHandler_PUT(t *testing.T) {
 
 	req = mux.SetURLVars(req, map[string]string{"chapter_id": "1"})
 
-	mockService.On("UpdateChapter", mock.Anything, models.Chapter{ID: "1", Name: "Updated Chapter", Course: "1"}).Return(expectedChapter, nil)
+	mockService.On("UpdateChapter", mock.Anything, models.Chapter{ID: "1", Name: "Updated Chapter", CourseID: "1"}).Return(expectedChapter, nil)
 
 	handler := srv.ChapterHandler()
 	handler.ServeHTTP(w, req)
@@ -358,7 +368,7 @@ func TestChapterHandler_PUT(t *testing.T) {
 
 func TestChapterHandler_DELETE(t *testing.T) {
 	mockService := new(MockService)
-	srv := &HttpServer{Service: mockService}
+	srv := &HTTP{Service: mockService}
 
 	mockService.On("DeleteChapter", mock.Anything, "1").Return(nil)
 
@@ -377,11 +387,11 @@ func TestChapterHandler_DELETE(t *testing.T) {
 // Test LessonsHandler
 func TestLessonsHandler_GET(t *testing.T) {
 	mockService := new(MockService)
-	srv := &HttpServer{Service: mockService}
+	srv := &HTTP{Service: mockService}
 
 	expectedLessons := []models.Lesson{
-		{ID: "1", Title: "Lesson 1", Chapter: "1"},
-		{ID: "2", Title: "Lesson 2", Chapter: "1"},
+		{ID: "1", Title: "Lesson 1", ChapterID: "1"},
+		{ID: "2", Title: "Lesson 2", ChapterID: "1"},
 	}
 
 	mockService.On("ReadLessons", mock.Anything, "1").Return(expectedLessons, nil)
@@ -404,10 +414,10 @@ func TestLessonsHandler_GET(t *testing.T) {
 
 func TestLessonsHandler_POST(t *testing.T) {
 	mockService := new(MockService)
-	srv := &HttpServer{Service: mockService}
+	srv := &HTTP{Service: mockService}
 
-	newLesson := models.Lesson{Title: "New Lesson", Chapter: "1"}
-	createdLesson := models.Lesson{ID: "3", Title: "New Lesson", Chapter: "1"}
+	newLesson := models.Lesson{Title: "New Lesson", ChapterID: "1"}
+	createdLesson := models.Lesson{ID: "3", Title: "New Lesson", ChapterID: "1"}
 
 	body, _ := json.Marshal(newLesson)
 	req := httptest.NewRequest("POST", "/lessons", bytes.NewReader(body))
@@ -432,9 +442,9 @@ func TestLessonsHandler_POST(t *testing.T) {
 // Test LessonHandler
 func TestLessonHandler_GET(t *testing.T) {
 	mockService := new(MockService)
-	srv := &HttpServer{Service: mockService}
+	srv := &HTTP{Service: mockService}
 
-	expectedLesson := models.Lesson{ID: "1", Title: "Lesson 1", Chapter: "1"}
+	expectedLesson := models.Lesson{ID: "1", Title: "Lesson 1", ChapterID: "1"}
 
 	mockService.On("ReadLesson", mock.Anything, "1").Return(expectedLesson, nil)
 
@@ -458,10 +468,10 @@ func TestLessonHandler_GET(t *testing.T) {
 
 func TestLessonHandler_PUT(t *testing.T) {
 	mockService := new(MockService)
-	srv := &HttpServer{Service: mockService}
+	srv := &HTTP{Service: mockService}
 
-	updatedLesson := models.Lesson{Title: "Updated Lesson", Chapter: "1"}
-	expectedLesson := models.Lesson{ID: "1", Title: "Updated Lesson", Chapter: "1"}
+	updatedLesson := models.Lesson{Title: "Updated Lesson", ChapterID: "1"}
+	expectedLesson := models.Lesson{ID: "1", Title: "Updated Lesson", ChapterID: "1"}
 
 	body, _ := json.Marshal(updatedLesson)
 	req := httptest.NewRequest("PUT", "/lessons/1", bytes.NewReader(body))
@@ -470,7 +480,7 @@ func TestLessonHandler_PUT(t *testing.T) {
 
 	req = mux.SetURLVars(req, map[string]string{"lesson_id": "1"})
 
-	mockService.On("UpdateLesson", mock.Anything, models.Lesson{ID: "1", Title: "Updated Lesson", Chapter: "1"}).Return(expectedLesson, nil)
+	mockService.On("UpdateLesson", mock.Anything, models.Lesson{ID: "1", Title: "Updated Lesson", ChapterID: "1"}).Return(expectedLesson, nil)
 
 	handler := srv.LessonHandler()
 	handler.ServeHTTP(w, req)
@@ -487,7 +497,7 @@ func TestLessonHandler_PUT(t *testing.T) {
 
 func TestLessonHandler_DELETE(t *testing.T) {
 	mockService := new(MockService)
-	srv := &HttpServer{Service: mockService}
+	srv := &HTTP{Service: mockService}
 
 	mockService.On("DeleteLesson", mock.Anything, "1").Return(nil)
 
@@ -506,7 +516,7 @@ func TestLessonHandler_DELETE(t *testing.T) {
 // Test error cases
 func TestCoursesHandler_GET_ServiceError(t *testing.T) {
 	mockService := new(MockService)
-	srv := &HttpServer{Service: mockService}
+	srv := &HTTP{Service: mockService}
 
 	mockService.On("ReadCourses", mock.Anything).Return([]models.Course{}, assert.AnError)
 
@@ -522,7 +532,7 @@ func TestCoursesHandler_GET_ServiceError(t *testing.T) {
 
 func TestCoursesHandler_POST_InvalidJSON(t *testing.T) {
 	mockService := new(MockService)
-	srv := &HttpServer{Service: mockService}
+	srv := &HTTP{Service: mockService}
 
 	req := httptest.NewRequest("POST", "/courses", bytes.NewReader([]byte("{invalid json")))
 	req.Header.Set("Content-Type", "application/json")
@@ -536,7 +546,7 @@ func TestCoursesHandler_POST_InvalidJSON(t *testing.T) {
 
 func TestCourseHandler_GET_InvalidID(t *testing.T) {
 	mockService := new(MockService)
-	srv := &HttpServer{Service: mockService}
+	srv := &HTTP{Service: mockService}
 
 	// ✅ IMPORTANT: Set up the expectation for the empty ID case
 	// Return an empty course and nil error (or whatever your actual handler expects)
@@ -558,7 +568,7 @@ func TestCourseHandler_GET_InvalidID(t *testing.T) {
 
 func TestChaptersHandler_GET_NoFilter(t *testing.T) {
 	mockService := new(MockService)
-	srv := &HttpServer{Service: mockService}
+	srv := &HTTP{Service: mockService}
 
 	expectedChapters := []models.Chapter{
 		{ID: "1", Name: "Chapter 1"},
