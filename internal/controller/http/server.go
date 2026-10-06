@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/alexliesenfeld/health"
@@ -141,6 +142,8 @@ func WithService(service Service) func(*HttpServer) {
 	}
 }
 
+// ... остальной код без изменений ...
+
 func WithServer(port string) func(*HttpServer) {
 
 	return func(srv *HttpServer) {
@@ -165,11 +168,31 @@ func WithServer(port string) func(*HttpServer) {
 
 		// Настройка CORS
 		c := cors.New(cors.Options{
-			AllowedOrigins:   []string{"https://study.plyglo.com"}, // Укажите ваш фронтенд домен
+			AllowOriginFunc: func(origin string) bool {
+				// Пустой Origin — не браузерный запрос (curl, Postman, мобильные клиенты).
+				// Такие запросы CORS не касается, но раз уж функция вызвана — разрешаем.
+				if origin == "" {
+					return true
+				}
+
+				u, err := url.Parse(origin)
+				if err != nil {
+					return false
+				}
+
+				// Любой localhost / 127.0.0.1 / ::1 на любом порту
+				switch u.Hostname() {
+				case "localhost", "127.0.0.1", "::1":
+					return true
+				}
+
+				// Прод-домен
+				return origin == "https://study.plyglo.com"
+			},
 			AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 			AllowedHeaders:   []string{"Content-Type", "Authorization"},
 			AllowCredentials: true,
-			MaxAge:           300, // Кэширование preflight запросов на 5 минут
+			MaxAge:           300,
 		})
 
 		srv.server = &http.Server{
