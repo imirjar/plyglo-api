@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+	"fmt"
 	"net/url"
 	"strings"
 
@@ -19,24 +20,39 @@ func parseConnSchema(dbConn string) string {
 	// in upper case to match URL scheme format
 	return strings.ToLower(parsedURL.Scheme)
 }
-func New(dbConn string) Storage {
+func New(dbConn string) *Storage {
+	storage := &Storage{}
+
 	schema := parseConnSchema(dbConn)
 	switch schema {
-	case "mongo":
-		return mongo.New(context.Background(), dbConn)
-	case "postgrs":
-		return postgres.New(context.Background(), dbConn)
+	case "mongodb":
+		store, closeFn := mongo.New(context.Background(), dbConn)
+		storage.Store = store
+		storage.closeFunc = closeFn
+
+	case "postgres":
+		store, closeFn := postgres.New(context.Background(), dbConn)
+		storage.Store = store
+		storage.closeFunc = closeFn
 	// case "s3":
 	// 	return storage
 	default:
-		return nil
+		panic(fmt.Sprintf("unsupported schema: %s", schema))
 	}
+	return storage
 
 }
 
-type Storage interface {
-	// Connect/Close
-	Close(context.Context) error
+type Storage struct {
+	Store
+	closeFunc func(context.Context) error
+}
+
+func (s *Storage) Close(ctx context.Context) error {
+	return s.closeFunc(ctx)
+}
+
+type Store interface {
 
 	// Courses
 	SelectCourses(context.Context) ([]models.Course, error)

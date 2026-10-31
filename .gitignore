@@ -5,3 +5,6 @@ config/*.yml
 *.pem
 
 /bin
+
+# Mongo local data
+internal/storage/mongo/data
