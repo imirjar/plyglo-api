@@ -1,4 +1,4 @@
-package storage
+package postgres
 
 import (
 	"context"
@@ -15,14 +15,14 @@ func (s *Storage) SelectChapters(ctx context.Context, courseID string) ([]models
 
 	// Базовый запрос
 	query := `
-        SELECT 
-            c.id, 
-            c.name, 
-            c.description, 
+        SELECT
+            c.id,
+            c.name,
+            c.description,
             c.course_id,
             c.position,
             c.updated
-        FROM 
+        FROM
             chapters c
     `
 
@@ -73,16 +73,16 @@ func (s *Storage) SelectChapters(ctx context.Context, courseID string) ([]models
 func (s *Storage) SelectChapter(ctx context.Context, chapterID string) (models.Chapter, error) {
 
 	query := `
-		SELECT 
+		SELECT
 			c.id,
 			c.name,
 			c.description,
 			c.course_id,
-			c.position, 
+			c.position,
 			c.updated
-		FROM 
+		FROM
 			chapters c
-		WHERE 
+		WHERE
 			c.id = $1
 	`
 
@@ -137,9 +137,9 @@ func (s *Storage) UpdateChapter(ctx context.Context, chapter models.Chapter) (mo
 	// log.Print(chapter)
 	log.Print("OOOOK")
 	query := `
-        UPDATE chapters 
-        SET name = $1, 
-            description = $2, 
+        UPDATE chapters
+        SET name = $1,
+            description = $2,
             position = $3,
 			course_id = $4,
 			updated = $5

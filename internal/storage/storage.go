@@ -2,50 +2,60 @@ package storage
 
 import (
 	"context"
-	"log"
+	"net/url"
+	"strings"
 
-	"github.com/jackc/pgx/v5/pgxpool"
+	models "github.com/imirjar/poliglotim-api/internal/domain"
+	mongo "github.com/imirjar/poliglotim-api/internal/storage/mongo"
+	postgres "github.com/imirjar/poliglotim-api/internal/storage/postgres"
 )
 
-type Storage struct {
-	connString string
-	psql       *pgxpool.Pool
-}
-
-func New(opts ...func(*Storage)) *Storage {
-	storage := &Storage{}
-
-	for _, opt := range opts {
-		opt(storage)
-	}
-
-	return storage
-}
-
-func WithDB(psqlConn string) func(*Storage) {
-	return func(s *Storage) {
-		s.connString = psqlConn
-	}
-}
-
-func (s *Storage) Conn(ctx context.Context) error {
-	dbConn, err := pgxpool.New(ctx, s.connString)
+func parseConnSchema(dbConn string) string {
+	parsedURL, err := url.Parse(strings.TrimSpace(dbConn))
 	if err != nil {
-		return err
-	}
-	// defer dbConn.Close()
-
-	if err = dbConn.Ping(ctx); err != nil {
-		return err
+		return ""
 	}
 
-	s.psql = dbConn
-	return nil
+	// in upper case to match URL scheme format
+	return strings.ToLower(parsedURL.Scheme)
+}
+func New(dbConn string) Storage {
+	schema := parseConnSchema(dbConn)
+	switch schema {
+	case "mongo":
+		return mongo.New(context.Background(), dbConn)
+	case "postgrs":
+		return postgres.New(context.Background(), dbConn)
+	// case "s3":
+	// 	return storage
+	default:
+		return nil
+	}
+
 }
 
-func (s *Storage) Close() {
-	if s.psql != nil {
-		s.psql.Close()
-		log.Println("Database connection closed")
-	}
+type Storage interface {
+	// Connect/Close
+	Close(context.Context) error
+
+	// Courses
+	SelectCourses(context.Context) ([]models.Course, error)
+	SelectCourse(context.Context, string) (models.Course, error)
+	InsertCourse(context.Context, models.Course) (models.Course, error)
+	UpdateCourse(context.Context, models.Course) (models.Course, error)
+	DeleteCourse(context.Context, string) error
+
+	// Chapters
+	SelectChapters(context.Context, string) ([]models.Chapter, error)
+	SelectChapter(context.Context, string) (models.Chapter, error)
+	InsertChapter(context.Context, models.Chapter) (models.Chapter, error)
+	UpdateChapter(context.Context, models.Chapter) (models.Chapter, error)
+	DeleteChapter(context.Context, string) error
+
+	// Lessons
+	SelectLessons(context.Context, string) ([]models.Lesson, error)
+	SelectLesson(context.Context, string) (models.Lesson, error)
+	InsertLesson(context.Context, models.Lesson) (models.Lesson, error)
+	UpdateLesson(context.Context, models.Lesson) (models.Lesson, error)
+	DeleteLesson(context.Context, string) error
 }

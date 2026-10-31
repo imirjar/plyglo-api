@@ -1,4 +1,4 @@
-package storage
+package postgres
 
 import (
 	"context"
@@ -16,18 +16,18 @@ func (s *Storage) SelectLessons(ctx context.Context, chapterID string) ([]models
 	var err error
 
 	if chapterID == "" {
-		query := `SELECT 
+		query := `SELECT
 			id, title, updated
 		FROM lessons`
 
 		rows, err = s.psql.Query(ctx, query)
 	} else {
 		query := `
-		SELECT 
-			id, 
-			title, 
+		SELECT
+			id,
+			title,
 			updated
-		FROM 
+		FROM
 			lessons
 		WHERE chapter_id = $1
 
@@ -59,12 +59,12 @@ func (s *Storage) SelectLessons(ctx context.Context, chapterID string) ([]models
 }
 func (s *Storage) SelectLesson(ctx context.Context, lessonID string) (models.Lesson, error) {
 	query := `
-		SELECT 
-			l.id, 
-			l.title, 
-			l.text, 
+		SELECT
+			l.id,
+			l.title,
+			l.text,
 			l.updated
-		FROM 
+		FROM
 			lessons l
 		WHERE
 			l.id = $1
@@ -115,9 +115,9 @@ func (s *Storage) InsertLesson(ctx context.Context, lesson models.Lesson) (model
 }
 func (s *Storage) UpdateLesson(ctx context.Context, lesson models.Lesson) (models.Lesson, error) {
 	query := `
-        UPDATE lessons 
-        SET title = $1, 
-            text = $2, 
+        UPDATE lessons
+        SET title = $1,
+            text = $2,
             chapter_id = $3,
             updated = CURRENT_TIMESTAMP
         WHERE id = $5

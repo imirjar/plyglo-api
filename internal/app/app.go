@@ -10,7 +10,7 @@ import (
 	"github.com/imirjar/poliglotim-api/config"
 	server "github.com/imirjar/poliglotim-api/internal/controller/http"
 	service "github.com/imirjar/poliglotim-api/internal/service/study"
-	"github.com/imirjar/poliglotim-api/internal/storage"
+	storage "github.com/imirjar/poliglotim-api/internal/storage"
 )
 
 type App struct {
@@ -24,14 +24,14 @@ type Server interface {
 }
 
 type Storage interface {
-	Conn(context.Context) error
-	Close()
+	// Conn(context.Context) error
+	Close(context.Context) error
 }
 
 func New() *App {
 	config := config.New()
 
-	storage := storage.New(storage.WithDB(config.DBConn))
+	storage := storage.New(config.DBConn)
 	service := service.New(service.WithStorage(storage))
 	server := server.New(server.WithServer(config.Port), server.WithService(service))
 
@@ -42,9 +42,9 @@ func New() *App {
 }
 
 func (app *App) Start(ctx context.Context) error {
-	if err := app.storage.Conn(ctx); err != nil {
-		return fmt.Errorf("connect storage: %w", err)
-	}
+	// if err := app.storage.Conn(ctx); err != nil {
+	// 	return fmt.Errorf("connect storage: %w", err)
+	// }
 
 	if err := app.server.Run(); err != nil && err != http.ErrServerClosed {
 		return fmt.Errorf("server error: %w", err)
@@ -55,10 +55,10 @@ func (app *App) Start(ctx context.Context) error {
 
 func (app *App) Stop(ctx context.Context) error {
 	if err := app.server.Stop(ctx); err != nil {
-		app.storage.Close()
+		app.storage.Close(ctx)
 		return fmt.Errorf("stop server: %w", err)
 	}
 
-	app.storage.Close()
+	app.storage.Close(ctx)
 	return nil
 }

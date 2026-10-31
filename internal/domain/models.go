@@ -8,7 +8,7 @@ type Course struct {
 	ID          string    `json:"id"`
 	Name        string    `json:"name"`
 	Description string    `json:"description"`
-	Updated     time.Time `json:"updated,omitempty"`
+	Updated     time.Time `json:"updated"`
 	LogoPath    *string   `json:"logo_path,omitempty"`
 	IsPublished bool      `json:"is_published,omitempty"`
 }
@@ -23,9 +23,10 @@ type Chapter struct {
 }
 
 type Lesson struct {
-	ID      string    `json:"id"`
-	Chapter string    `json:"chapter_id,omitempty"`
-	Title   string    `json:"title"`
-	Text    string    `json:"text,omitempty"`
-	Updated time.Time `json:"updated"`
+	ID       string    `json:"id"`
+	Chapter  string    `json:"chapter_id,omitempty"`
+	Title    string    `json:"title"`
+	Text     string    `json:"text,omitempty"`
+	Updated  time.Time `json:"updated"`
+	Position int       `json:"position,omitempty"`
 }

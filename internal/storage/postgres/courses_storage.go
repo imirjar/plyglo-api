@@ -1,4 +1,4 @@
-package storage
+package postgres
 
 import (
 	"context"
@@ -13,16 +13,16 @@ func (s *Storage) SelectCourses(ctx context.Context) ([]models.Course, error) {
 	var courses []models.Course
 
 	query := `
-		SELECT 
-			c.id, 
-			c.name, 
-			c.description, 
-			c.updated, 
+		SELECT
+			c.id,
+			c.name,
+			c.description,
+			c.updated,
 			c.logo_path,
 			c.is_published
-		FROM 
+		FROM
 			courses c
-		ORDER BY 
+		ORDER BY
 			c.name;
 	`
 
@@ -63,16 +63,16 @@ func (s *Storage) SelectCourse(ctx context.Context, courseID string) (models.Cou
 	}
 
 	query := `
-		SELECT 
-			c.id, 
-			c.name, 
-			c.description, 
-			c.updated, 
+		SELECT
+			c.id,
+			c.name,
+			c.description,
+			c.updated,
 			c.logo_path,
 			c.is_published
-		FROM 
+		FROM
 			courses c
-		WHERE 
+		WHERE
 			c.id = $1
 	`
 
@@ -123,10 +123,10 @@ func (s *Storage) InsertCourse(ctx context.Context, course models.Course) (model
 }
 func (s *Storage) UpdateCourse(ctx context.Context, course models.Course) (models.Course, error) {
 	query := `
-        UPDATE courses 
-        SET name = $1, 
-            description = $2, 
-            logo_path = $3, 
+        UPDATE courses
+        SET name = $1,
+            description = $2,
+            logo_path = $3,
             is_published = $4,
             updated = CURRENT_TIMESTAMP
         WHERE id = $5
