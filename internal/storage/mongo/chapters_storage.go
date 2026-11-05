@@ -22,7 +22,7 @@ func (s *Storage) SelectChapters(ctx context.Context, courseID string) ([]models
 	// bson.D для сортировки — сохраняет порядок полей
 	opts := options.Find().SetSort(bson.D{{Key: "position", Value: 1}})
 
-	cursor, err := s.client.Database("courses").Collection("chapters").Find(ctx, filter, opts)
+	cursor, err := s.db.Collection("chapters").Find(ctx, filter, opts)
 	if err != nil {
 		return nil, fmt.Errorf("failed to query chapters: %w", err)
 	}
@@ -39,7 +39,7 @@ func (s *Storage) SelectChapters(ctx context.Context, courseID string) ([]models
 func (s *Storage) SelectChapter(ctx context.Context, chapterID string) (models.Chapter, error) {
 	var chapter models.Chapter
 
-	err := s.client.Database("courses").Collection("chapters").
+	err := s.db.Collection("chapters").
 		FindOne(ctx, bson.M{"_id": chapterID}).
 		Decode(&chapter)
 
@@ -64,7 +64,7 @@ func (s *Storage) InsertChapter(ctx context.Context, chapter models.Chapter) (mo
 		chapter.Updated = time.Now()
 	}
 
-	_, err := s.client.Database("courses").Collection("chapters").InsertOne(ctx, chapter)
+	_, err := s.db.Collection("chapters").InsertOne(ctx, chapter)
 	if err != nil {
 		return models.Chapter{}, fmt.Errorf("failed to create chapter: %w", err)
 	}
@@ -89,7 +89,7 @@ func (s *Storage) UpdateChapter(ctx context.Context, chapter models.Chapter) (mo
 	opts := options.FindOneAndUpdate().SetReturnDocument(options.After)
 
 	var updatedChapter models.Chapter
-	err := s.client.Database("courses").Collection("chapters").
+	err := s.db.Collection("chapters").
 		FindOneAndUpdate(ctx, bson.M{"_id": chapter.ID}, update, opts).
 		Decode(&updatedChapter)
 
@@ -104,7 +104,7 @@ func (s *Storage) UpdateChapter(ctx context.Context, chapter models.Chapter) (mo
 }
 
 func (s *Storage) DeleteChapter(ctx context.Context, chapterID string) error {
-	result, err := s.client.Database("courses").Collection("chapters").DeleteOne(ctx, bson.M{"_id": chapterID})
+	result, err := s.db.Collection("chapters").DeleteOne(ctx, bson.M{"_id": chapterID})
 	if err != nil {
 		return fmt.Errorf("failed to execute delete query: %w", err)
 	}

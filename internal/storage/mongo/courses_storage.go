@@ -17,7 +17,7 @@ func (s *Storage) SelectCourses(ctx context.Context) ([]models.Course, error) {
 	// bson.D для сортировки — сохраняет порядок полей
 	opts := options.Find().SetSort(bson.D{{Key: "name", Value: 1}})
 
-	cursor, err := s.client.Database("courses").Collection("courses").Find(ctx, bson.M{}, opts)
+	cursor, err := s.db.Collection("courses").Find(ctx, bson.M{}, opts)
 	if err != nil {
 		return nil, fmt.Errorf("failed to query courses: %w", err)
 	}
@@ -34,7 +34,7 @@ func (s *Storage) SelectCourses(ctx context.Context) ([]models.Course, error) {
 func (s *Storage) SelectCourse(ctx context.Context, courseID string) (models.Course, error) {
 	var course models.Course
 
-	err := s.client.Database("courses").Collection("courses").
+	err := s.db.Collection("courses").
 		FindOne(ctx, bson.M{"_id": courseID}).
 		Decode(&course)
 
@@ -59,7 +59,7 @@ func (s *Storage) InsertCourse(ctx context.Context, course models.Course) (model
 		course.Updated = time.Now()
 	}
 
-	_, err := s.client.Database("courses").Collection("courses").InsertOne(ctx, course)
+	_, err := s.db.Collection("courses").InsertOne(ctx, course)
 	if err != nil {
 		return models.Course{}, fmt.Errorf("failed to create course: %w", err)
 	}
@@ -83,7 +83,7 @@ func (s *Storage) UpdateCourse(ctx context.Context, course models.Course) (model
 	opts := options.FindOneAndUpdate().SetReturnDocument(options.After)
 
 	var updatedCourse models.Course
-	err := s.client.Database("courses").Collection("courses").
+	err := s.db.Collection("courses").
 		FindOneAndUpdate(ctx, bson.M{"_id": course.ID}, update, opts).
 		Decode(&updatedCourse)
 
@@ -98,7 +98,7 @@ func (s *Storage) UpdateCourse(ctx context.Context, course models.Course) (model
 }
 
 func (s *Storage) DeleteCourse(ctx context.Context, courseID string) error {
-	result, err := s.client.Database("courses").Collection("courses").DeleteOne(ctx, bson.M{"_id": courseID})
+	result, err := s.db.Collection("courses").DeleteOne(ctx, bson.M{"_id": courseID})
 	if err != nil {
 		return fmt.Errorf("failed to execute delete query: %w", err)
 	}

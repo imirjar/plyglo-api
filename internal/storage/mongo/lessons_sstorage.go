@@ -21,7 +21,7 @@ func (s *Storage) SelectLessons(ctx context.Context, chapterID string) ([]models
 	// bson.D для сортировки — сохраняет порядок полей
 	opts := options.Find().SetSort(bson.D{{Key: "position", Value: 1}})
 
-	cursor, err := s.client.Database("courses").Collection("lessons").Find(ctx, filter, opts)
+	cursor, err := s.db.Collection("lessons").Find(ctx, filter, opts)
 	if err != nil {
 		return nil, fmt.Errorf("failed to query lessons: %w", err)
 	}
@@ -38,7 +38,7 @@ func (s *Storage) SelectLessons(ctx context.Context, chapterID string) ([]models
 func (s *Storage) SelectLesson(ctx context.Context, lessonID string) (models.Lesson, error) {
 	var lesson models.Lesson
 
-	err := s.client.Database("courses").Collection("lessons").
+	err := s.db.Collection("lessons").
 		FindOne(ctx, bson.M{"_id": lessonID}).
 		Decode(&lesson)
 
@@ -62,7 +62,7 @@ func (s *Storage) InsertLesson(ctx context.Context, lesson models.Lesson) (model
 		lesson.Updated = time.Now()
 	}
 
-	_, err := s.client.Database("courses").Collection("lessons").InsertOne(ctx, lesson)
+	_, err := s.db.Collection("lessons").InsertOne(ctx, lesson)
 	if err != nil {
 		return models.Lesson{}, fmt.Errorf("failed to create lesson: %w", err)
 	}
@@ -86,7 +86,7 @@ func (s *Storage) UpdateLesson(ctx context.Context, lesson models.Lesson) (model
 	opts := options.FindOneAndUpdate().SetReturnDocument(options.After)
 
 	var updatedLesson models.Lesson
-	err := s.client.Database("courses").Collection("lessons").
+	err := s.db.Collection("lessons").
 		FindOneAndUpdate(ctx, bson.M{"_id": lesson.ID}, update, opts).
 		Decode(&updatedLesson)
 
@@ -101,7 +101,7 @@ func (s *Storage) UpdateLesson(ctx context.Context, lesson models.Lesson) (model
 }
 
 func (s *Storage) DeleteLesson(ctx context.Context, lessonID string) error {
-	result, err := s.client.Database("courses").Collection("lessons").DeleteOne(ctx, bson.M{"_id": lessonID})
+	result, err := s.db.Collection("lessons").DeleteOne(ctx, bson.M{"_id": lessonID})
 	if err != nil {
 		return fmt.Errorf("failed to execute delete query: %w", err)
 	}

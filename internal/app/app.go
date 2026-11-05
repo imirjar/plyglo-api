@@ -10,7 +10,7 @@ import (
 	"github.com/imirjar/poliglotim-api/config"
 	server "github.com/imirjar/poliglotim-api/internal/controller/http"
 	service "github.com/imirjar/poliglotim-api/internal/service/study"
-	storage "github.com/imirjar/poliglotim-api/internal/storage"
+	storage "github.com/imirjar/poliglotim-api/internal/storage/mongo"
 )
 
 type App struct {
@@ -24,7 +24,7 @@ type Server interface {
 }
 
 type Storage interface {
-	// Conn(context.Context) error
+	Conn(context.Context) error
 	Close(context.Context) error
 }
 
@@ -42,9 +42,9 @@ func New() *App {
 }
 
 func (app *App) Start(ctx context.Context) error {
-	// if err := app.storage.Conn(ctx); err != nil {
-	// 	return fmt.Errorf("connect storage: %w", err)
-	// }
+	if err := app.storage.Conn(ctx); err != nil {
+		return fmt.Errorf("connect storage: %w", err)
+	}
 
 	if err := app.server.Run(); err != nil && err != http.ErrServerClosed {
 		return fmt.Errorf("server error: %w", err)

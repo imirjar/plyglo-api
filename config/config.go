@@ -32,3 +32,17 @@ func (cfg *Config) readEnv() error {
 	return err
 
 }
+
+// type dbConn struct {
+// 	string
+// }
+
+// func (c *dbConn) Schema() string {
+// 	parsedURL, err := url.Parse(strings.TrimSpace(c.string))
+// 	if err != nil {
+// 		return ""
+// 	}
+
+// 	// in upper case to match URL scheme format
+// 	return strings.ToLower(parsedURL.Scheme)
+// }
