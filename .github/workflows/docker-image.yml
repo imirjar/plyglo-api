@@ -71,9 +71,9 @@ jobs:
         push: true
         platforms: linux/amd64,linux/arm64  # Добавлена поддержка multi-arch
         tags: |
-          ghcr.io/${{ github.repository_owner }}/${{ vars.DOCKER_IMAGE_NAME }}:latest
-          ghcr.io/${{ github.repository_owner }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.VERSION }}
-          ghcr.io/${{ github.repository_owner }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.TAG_NAME }}
+          ghcr.io/${{ github.repository_owner }}/${{ env.DOCKER_IMAGE_NAME }}:latest
+          ghcr.io/${{ github.repository_owner }}/${{ env.DOCKER_IMAGE_NAME }}:${{ env.VERSION }}
+          ghcr.io/${{ github.repository_owner }}/${{ env.DOCKER_IMAGE_NAME }}:${{ env.TAG_NAME }}
         labels: |
           org.opencontainers.image.version=${{ env.VERSION }}
           org.opencontainers.image.revision=${{ github.sha }}
